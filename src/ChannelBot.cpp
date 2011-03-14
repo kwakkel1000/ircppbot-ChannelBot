@@ -29,6 +29,7 @@ void ChannelBot::Init(DataInterface* pData)
 	mpDataInterface = pData;
 	mpDataInterface->Init(true, false, false, true);
     Global::Instance().get_IrcData().AddConsumer(mpDataInterface);
+    channelbottrigger = Global::Instance().get_ConfigReader().GetString("channelbottrigger");
 
     ChannelsInterface& C = Global::Instance().get_Channels();
     vector<string> chans = C.GetChannels();
