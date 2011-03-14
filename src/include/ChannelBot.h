@@ -1,17 +1,15 @@
 #ifndef ChannelBot_h
 #define ChannelBot_h
-
-#include "../../../../include/interfaces/ModuleInterface.h"
-#include "../../../../include/core/Data.h"
-#include "../../../../include/core/ModuleBase.h"
-#include <iostream>
-#include <algorithm>
+#include <core/ModuleBase.h>
+#include <interfaces/DataInterface.h>
 #include <string>
 #include <vector>
+#include <boost/shared_ptr.hpp>
+#include <boost/thread/thread.hpp>
 
 using namespace std;
 
-class Data;
+class DataInterface;
 class ChannelBot : public ModuleBase
 {
 public:
@@ -19,13 +17,12 @@ public:
     ~ChannelBot();
     void read();
     void stop();
-    void Init();
+    void Init(DataInterface* pData);
     void timerrun();
-
 
 private:
 
-    Data * D;
+    DataInterface* mpDataInterface;
     void BindInit();
 
     void parse_raw();

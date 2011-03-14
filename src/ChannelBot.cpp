@@ -1,5 +1,5 @@
 #include "include/ChannelBot.h"
-#include "../../../include/core/Global.h"
+#include <core/Global.h>
 #include <iostream>
 #include <algorithm>
 #include <boost/algorithm/string.hpp>
@@ -21,16 +21,14 @@ ChannelBot::ChannelBot()
 ChannelBot::~ChannelBot()
 {
     stop();
-	Global::Instance().get_IrcData().DelConsumer(D);
-    delete D;
+	Global::Instance().get_IrcData().DelConsumer(mpDataInterface);
+    delete mpDataInterface;
 }
-
-void ChannelBot::Init()
+void ChannelBot::Init(DataInterface* pData)
 {
-    channelbottrigger = Global::Instance().get_ConfigReader().GetString("channelbottrigger");
-    D = new Data();
-    D->Init(true, false, false, true);
-    Global::Instance().get_IrcData().AddConsumer(D);
+	mpDataInterface = pData;
+	mpDataInterface->Init(true, false, false, true);
+    Global::Instance().get_IrcData().AddConsumer(mpDataInterface);
 
     ChannelsInterface& C = Global::Instance().get_Channels();
     vector<string> chans = C.GetChannels();
@@ -55,7 +53,7 @@ void ChannelBot::Init()
 void ChannelBot::stop()
 {
     run = false;
-    D->stop();
+    mpDataInterface->stop();
     std::cout << "ChannelBot::stop" << std::endl;
     raw_parse_thread->join();
     std::cout << "raw_parse_thread stopped" << std::endl;
@@ -77,7 +75,7 @@ void ChannelBot::parse_raw()
     std::vector< std::string > data;
     while(run)
     {
-        data = D->GetRawQueue();
+        data = mpDataInterface->GetRawQueue();
         ParseData(data);
     }
 }
@@ -87,7 +85,7 @@ void ChannelBot::parse_privmsg()
     std::vector< std::string > data;
     while(run)
     {
-        data = D->GetPrivmsgQueue();
+        data = mpDataInterface->GetPrivmsgQueue();
         PRIVMSG(data, channelbottrigger);
     }
 }
