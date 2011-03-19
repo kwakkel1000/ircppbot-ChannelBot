@@ -24,6 +24,7 @@ ChannelBot::~ChannelBot()
 	Global::Instance().get_IrcData().DelConsumer(mpDataInterface);
     delete mpDataInterface;
 }
+
 void ChannelBot::Init(DataInterface* pData)
 {
 	mpDataInterface = pData;
