@@ -63,8 +63,7 @@ private:
 
     void OnUserJoin(string chan, string nick);
 
-    void DBChannelInfo(string data);
-    void DBreplyinit();
+    //void DBreplyinit();
 
     void timerlong();
     vector<int> timer_sec;

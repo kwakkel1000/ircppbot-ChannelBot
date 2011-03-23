@@ -31,13 +31,6 @@ void ChannelBot::Init(DataInterface* pData)
 	mpDataInterface->Init(true, false, false, true);
     Global::Instance().get_IrcData().AddConsumer(mpDataInterface);
     channelbottrigger = Global::Instance().get_ConfigReader().GetString("channelbottrigger");
-
-    ChannelsInterface& C = Global::Instance().get_Channels();
-    vector<string> chans = C.GetChannels();
-    for (unsigned int i = 0; i < chans.size(); i++)
-    {
-        DBChannelInfo(chans[i]);
-    }
     longtime = 100;
 
     int Tijd;
@@ -149,7 +142,8 @@ void ChannelBot::ParsePrivmsg(std::string nick, std::string command, std::string
                 }
                 if (boost::iequals(commands[i], "reloadchan"))
                 {
-                    DBChannelInfo(chan);
+                    //DBChannelInfo(chan);
+
                     overwatch(commands[i], command, chan, nick, auth, args);
                 }
                 if (boost::iequals(commands[i], "ping"))
@@ -384,13 +378,11 @@ void ChannelBot::adduser(string chan, string nick, string auth, string reqnick, 
         {
             if (C.AddAuth(chan, reqauth))
             {
-                int uid = U.GetUid(reqnick);
-                int cid = C.GetCid(chan);
-                if ((cid > -1) && (uid > -1) && (reqaccess > 0))
+                std::string UserUuid = U.GetUid(reqnick);
+                std::string ChannelUuid = C.GetCid(chan);
+                if ((ChannelUuid != "NULL") && (UserUuid != "NULL") && (reqaccess > 0))
                 {
-                    string sqlstring = "INSERT into users ( uid, cid, access) VALUES ( '" + convertInt(uid) + "', '" + convertInt(cid) + "', '" + convertInt(reqaccess) + "' );";
-                    C.SetAccess(chan, reqauth, reqaccess);
-                    RawSql(sqlstring);
+					C.AddUserToChannel(ChannelUuid, UserUuid, reqaccess);
                     string sendstring = "NOTICE " + nick + " :user " + reqnick + "[" + reqauth + "] added to the userlist with " + convertInt(reqaccess) + " access\r\n";
                     Send(sendstring);
                 }
@@ -412,13 +404,14 @@ void ChannelBot::deluser(string chan, string nick, string auth, string reqnick, 
         {
             if (tmpaccess < access || U.GetGod(nick) == 1)
             {
-                int uid = U.GetUid(reqnick);
-                int cid = C.GetCid(chan);
-                if ((cid > -1) && (uid > -1))
+                std::string UserUuid = U.GetUid(reqnick);
+                std::string ChannelUuid = C.GetCid(chan);
+                if ((ChannelUuid != "NULL") && (UserUuid != "NULL"))
                 {
-                    string sqlstring = "DELETE from users where uid = '" + convertInt(uid) + "' AND cid = '" + convertInt(cid) + "';";
+					C.DeleteUserFromChannel(ChannelUuid, UserUuid);
+                    /*string sqlstring = "DELETE from users where UserUuid = '" + UserUuid + "' AND ChannelUuid = '" + ChannelUuid + "';";
                     C.DelAuth(chan, reqauth);
-                    RawSql(sqlstring);
+                    RawSql(sqlstring);*/
                     string sendstring = "NOTICE " + nick + " :user " + reqnick + "[" + reqauth + "] deleted from the userlist\r\n";
                     Send(sendstring);
                 }
@@ -437,11 +430,11 @@ void ChannelBot::changelevel(string chan, string nick, string auth, string reqni
         int access = C.GetAccess(chan, auth);
         if (((access > reqaccess) && (access > oldaccess)) || U.GetGod(nick) == 1)
         {
-            int uid = U.GetUid(reqnick);
-            int cid = C.GetCid(chan);
-            if ((cid > -1) && (uid > -1) && (reqaccess > 0))
+            std::string UserUuid = U.GetUid(reqnick);
+            std::string ChannelUuid = C.GetCid(chan);
+            if ((ChannelUuid != "NULL") && (UserUuid != "NULL") && (reqaccess > 0))
             {
-                string sqlstring = "UPDATE users SET access = '" + convertInt(reqaccess) + "' WHERE cid = '" + convertInt(cid) + "' AND uid = '" + convertInt(uid) + "';";
+                string sqlstring = "UPDATE users SET access = '" + convertInt(reqaccess) + "' WHERE ChannelUuid = '" + ChannelUuid + "' AND UserUuid = '" + UserUuid + "';";
                 C.SetAccess(chan, reqauth, reqaccess);
                 RawSql(sqlstring);
                 string sendstring = "NOTICE " + nick + " :user " + reqnick + "[" + reqauth + "] changed access to " + convertInt(reqaccess) + " access\r\n";
@@ -661,17 +654,26 @@ void ChannelBot::myaccess(string nick, string reqnick, string reqauth, int ca)
 {
     ChannelsInterface& C = Global::Instance().get_Channels();
     UsersInterface& U = Global::Instance().get_Users();
-    string reply_string = "NOTICE " + nick + " :" + irc_reply("myaccess", U.GetLanguage(nick)) + "\r\n";
-    reply_string = irc_reply_replace(reply_string, "$nick$", reqnick);
-    reply_string = irc_reply_replace(reply_string, "$auth$", reqauth);
-    Send(reply_string);
-    vector<string>channels = C.GetChannels();
-    for ( unsigned int i = 0 ; i < channels.size(); i++ )
+    string returnstring;
+    unsigned int length = U.GetWidth(nick);
+    unsigned int amount = 2;
+    string commandrpl = irc_reply("myaccess", U.GetLanguage(nick));
+    commandrpl = irc_reply_replace(commandrpl, "$nick$", reqnick);
+    commandrpl = irc_reply_replace(commandrpl, "$auth$", reqauth);
+    returnstring = "NOTICE " + nick + " :" + centre(commandrpl.size(), amount, length) + commandrpl + "\r\n";
+    Send(returnstring);
+
+    std::string channels;
+    std::vector< std::string > sortchannels = C.GetChannels();
+    sort (sortchannels.begin(), sortchannels.end());
+    for ( unsigned int i = 0 ; i < sortchannels.size(); i++ )
     {
-        int access = C.GetAccess(channels[i], reqauth);
+        int access = C.GetAccess(sortchannels[i], reqauth);
         if (access > 0)
         {
-            string returnstr = "NOTICE " + nick + " :" + channels[i] + "     " + convertInt(access) + "\r\n";
+			std::string tmpstring = sortchannels[i];
+			tmpstring = fillspace(tmpstring, length) + convertInt(access);
+            string returnstr = "NOTICE " + nick + " :" + tmpstring + "\r\n";
             Send(returnstr);
         }
     }
@@ -685,6 +687,8 @@ void ChannelBot::up(string chan, string nick, string auth, int ca)
     //bool giveop = false;
     //bool givevoice = false;
     int access = C.GetAccess(chan, auth);
+    std::cout << "giveops" << C.GetGiveops(chan) << std::endl;
+    std::cout << "access" << access << std::endl;
     if (access >= C.GetGiveops(chan))
     {
         if (C.GetOp(chan, nick) == false)
@@ -855,7 +859,7 @@ void ChannelBot::JOIN(vector<string> data)
     }
     else
     {
-        if (U.GetUid(nick) >= 0)
+        if (U.GetUid(nick) != "NULL")
         {
             OnUserJoin(chan, nick);
         }
@@ -1014,31 +1018,7 @@ void ChannelBot::BindInit()
         cas.push_back(convertString(sql_result[i][2]));
     }
 }
-
-void ChannelBot::DBChannelInfo(string data)
-{
-    ChannelsInterface& C = Global::Instance().get_Channels();
-    vector< vector<string> > sql_result;
-    string sql_string = "select channels.id, channels.giveops, channels.givevoice from channels where channels.channel = '" + data + "';";
-    sql_result = RawSqlSelect(sql_string);
-    unsigned int i;
-    for (i = 0 ; i < sql_result.size() ; i++)
-    {
-        cout << sql_result[i][0] << " " << sql_result[i][1] << " " << sql_result[i][2] << endl;
-        C.SetCid(data, convertString(sql_result[i][0]));
-        C.SetGiveops(data, convertString(sql_result[i][1]));
-        C.SetGivevoice(data, convertString(sql_result[i][2]));
-    }
-    sql_string = "select users.access, auth.auth from users JOIN auth ON users.uid = auth.id JOIN channels ON users.cid = channels.id where channels.channel = '" + data + "';";
-    sql_result = RawSqlSelect(sql_string);
-    for (i = 0 ; i < sql_result.size() ; i++)
-    {
-        cout << sql_result[i][0] << " " << sql_result[i][1] << endl;
-        C.AddAuth(data, sql_result[i][1]);
-        C.SetAccess(data, sql_result[i][1], convertString(sql_result[i][0]));
-    }
-}
-
+/*
 void ChannelBot::DBreplyinit()
 {
     vector< vector<string> > sql_result;
@@ -1052,7 +1032,7 @@ void ChannelBot::DBreplyinit()
         reply_vector.push_back(sql_result[i][1]);
         reply_language_vector.push_back(sql_result[i][2]);
     }
-}
+}*/
 
 void ChannelBot::timerrun()
 {
