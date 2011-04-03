@@ -136,7 +136,7 @@ void ChannelBot::ParsePrivmsg(std::string nick, std::string command, std::string
 	std::cout << bind_command << " " << bind_access << std::endl;
 
 	//auth
-	if (bind_command == "auth")
+	if (boost::iequals(bind_command, "auth"))
 	{
 		if (args.size() == 0)
 		{
@@ -150,7 +150,7 @@ void ChannelBot::ParsePrivmsg(std::string nick, std::string command, std::string
 	}
 
 	//ping
-	if (bind_command == "ping")
+	if (boost::iequals(bind_command, "ping"))
 	{
 		if (args.size() == 0)
 		{
@@ -164,7 +164,7 @@ void ChannelBot::ParsePrivmsg(std::string nick, std::string command, std::string
 	}
 
 	//version
-	if (bind_command == "version")
+	if (boost::iequals(bind_command, "version"))
 	{
 		if (args.size() == 0)
 		{
@@ -178,7 +178,7 @@ void ChannelBot::ParsePrivmsg(std::string nick, std::string command, std::string
 	}
 
 	//up
-	if (bind_command == "up")
+	if (boost::iequals(bind_command, "up"))
 	{
 		if (args.size() == 0)
 		{
@@ -192,7 +192,7 @@ void ChannelBot::ParsePrivmsg(std::string nick, std::string command, std::string
 	}
 
 	//down
-	if (bind_command == "down")
+	if (boost::iequals(bind_command, "down"))
 	{
 		if (args.size() == 0)
 		{
@@ -206,7 +206,7 @@ void ChannelBot::ParsePrivmsg(std::string nick, std::string command, std::string
 	}
 
 	//resync
-	if (bind_command == "resync")
+	if (boost::iequals(bind_command, "resync"))
 	{
 		if (args.size() == 0)
 		{
@@ -220,7 +220,7 @@ void ChannelBot::ParsePrivmsg(std::string nick, std::string command, std::string
 	}
 
 	//access
-	if (bind_command == "access")
+	if (boost::iequals(bind_command, "access"))
 	{
 		if (args.size() == 0)
 		{
@@ -252,7 +252,7 @@ void ChannelBot::ParsePrivmsg(std::string nick, std::string command, std::string
 	}
 
 	//myaccess
-	if (bind_command == "myaccess")
+	if (boost::iequals(bind_command, "myaccess"))
 	{
 		if (args.size() == 0)
 		{
@@ -278,7 +278,7 @@ void ChannelBot::ParsePrivmsg(std::string nick, std::string command, std::string
 	}
 
 	//users
-	if (bind_command == "users")
+	if (boost::iequals(bind_command, "users"))
 	{
 		if (args.size() == 0)
 		{
@@ -292,7 +292,7 @@ void ChannelBot::ParsePrivmsg(std::string nick, std::string command, std::string
 	}
 
 	//channelcommands
-	if (bind_command == "channelcommands")
+	if (boost::iequals(bind_command, "channelcommands"))
 	{
 		if (args.size() == 0)
 		{
@@ -306,7 +306,7 @@ void ChannelBot::ParsePrivmsg(std::string nick, std::string command, std::string
 	}
 
 	//op
-	if (bind_command == "op")
+	if (boost::iequals(bind_command, "op"))
 	{
 		if (args.size() >= 1)
 		{
@@ -320,7 +320,7 @@ void ChannelBot::ParsePrivmsg(std::string nick, std::string command, std::string
 	}
 
 	//deop
-	if (bind_command == "deop")
+	if (boost::iequals(bind_command, "deop"))
 	{
 		if (args.size() >= 1)
 		{
@@ -334,7 +334,7 @@ void ChannelBot::ParsePrivmsg(std::string nick, std::string command, std::string
 	}
 
 	//voice
-	if (bind_command == "voice")
+	if (boost::iequals(bind_command, "voice"))
 	{
 		if (args.size() >= 1)
 		{
@@ -348,7 +348,7 @@ void ChannelBot::ParsePrivmsg(std::string nick, std::string command, std::string
 	}
 
 	//devoice
-	if (bind_command == "devoice")
+	if (boost::iequals(bind_command, "devoice"))
 	{
 		if (args.size() >= 1)
 		{
@@ -362,7 +362,7 @@ void ChannelBot::ParsePrivmsg(std::string nick, std::string command, std::string
 	}
 
 	//kickuser
-	if (bind_command == "kickuser")
+	if (boost::iequals(bind_command, "kickuser"))
 	{
 		if (args.size() >= 1)
 		{
@@ -385,7 +385,7 @@ void ChannelBot::ParsePrivmsg(std::string nick, std::string command, std::string
 	}
 
 	//deluser
-	if (bind_command == "deluser")
+	if (boost::iequals(bind_command, "deluser"))
 	{
 		if (args.size() >= 1)
 		{
@@ -402,7 +402,7 @@ void ChannelBot::ParsePrivmsg(std::string nick, std::string command, std::string
 	}
 
 	//adduser
-	if (bind_command == "adduser")
+	if (boost::iequals(bind_command, "adduser"))
 	{
 		if (args.size() >= 2)
 		{
@@ -420,7 +420,7 @@ void ChannelBot::ParsePrivmsg(std::string nick, std::string command, std::string
 	}
 
 	//changelevel
-	if (bind_command == "changelevel")
+	if (boost::iequals(bind_command, "changelevel"))
 	{
 		if (args.size() >= 2)
 		{
@@ -438,7 +438,7 @@ void ChannelBot::ParsePrivmsg(std::string nick, std::string command, std::string
 	}
 
 	//simulate
-	if (bind_command == "simulate")
+	if (boost::iequals(bind_command, "simulate"))
 	{
 		if (args.size() >= 2)
 		{
