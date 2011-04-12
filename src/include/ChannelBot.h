@@ -25,7 +25,7 @@ private:
     void parse_raw();
     void parse_privmsg();
     void ParseData(std::vector< std::string > data);
-    void ParsePrivmsg(std::string nick, std::string command, std::string chan, std::vector< std::string > args, int chantrigger);
+    void ParsePrivmsg(std::string mNick, std::string command, std::string chan, std::vector< std::string > args, int chantrigger);
     void PING(std::vector<std::string> data);
     //void PRIVMSG(std::vector<std::string> data);
     void INVITE(std::vector< std::string > data);
@@ -37,28 +37,28 @@ private:
     void MODE(std::vector< std::string > data);
     void QUIT(std::vector< std::string > data);
 
-    void adduser(std::string chan, std::string nick, std::string auth, std::string reqnick, std::string reqauth, int reqaccess, int ca);
-    void deluser(std::string chan, std::string nick, std::string auth, std::string reqnick, std::string reqauth, int ca);
-    void changelevel(std::string chan, std::string nick, std::string auth, std::string reqnick, std::string reqauth, int reqaccess, int ca);
-    void access(std::string chan, std::string nick, std::string reqnick, std::string reqauth, int ca);
-    void myaccess(std::string nick, std::string reqnick, std::string reqauth, int ca);
-    void ping(std::string chan, std::string nick, std::string auth, int ca);
-    void version(std::string chan, std::string nick, std::string auth, int ca);
-    void authme(std::string nick, int ca);
-    void up(std::string chan, std::string nick, std::string auth, int ca);
-    void down(std::string chan, std::string nick, std::string auth, int ca);
-    void resync(std::string chan, std::string nick, std::string auth, int ca);
-    void users(std::string chan, std::string nick, std::string auth, int ca);
-    void kickuser(std::string chan, std::string nick, std::string auth, std::string reqnick, std::string reqauth, std::string reason, int ca);
+    void adduser(std::string chan, std::string mNick, std::string auth, std::string reqnick, std::string reqauth, int reqaccess, int ca);
+    void deluser(std::string chan, std::string mNick, std::string auth, std::string reqnick, std::string reqauth, int ca);
+    void changelevel(std::string chan, std::string mNick, std::string auth, std::string reqnick, std::string reqauth, int reqaccess, int ca);
+    void access(std::string chan, std::string mNick, std::string reqnick, std::string reqauth, int ca);
+    void myaccess(std::string mNick, std::string reqnick, std::string reqauth, int ca);
+    void ping(std::string chan, std::string mNick, std::string auth, int ca);
+    void version(std::string chan, std::string mNick, std::string auth, int ca);
+    void authme(std::string mNick, int ca);
+    void up(std::string chan, std::string mNick, std::string auth, int ca);
+    void down(std::string chan, std::string mNick, std::string auth, int ca);
+    void resync(std::string chan, std::string mNick, std::string auth, int ca);
+    void users(std::string chan, std::string mNick, std::string auth, int ca);
+    void kickuser(std::string chan, std::string mNick, std::string auth, std::string reqnick, std::string reqauth, std::string reason, int ca);
 
-    void op(std::string chan, std::string nick, std::string auth, std::string reqnick, std::string reqauth, int ca);
-    void deop(std::string chan, std::string nick, std::string auth, std::string reqnick, std::string reqauth, int ca);
-    void voice(std::string chan, std::string nick, std::string auth, std::string reqnick, std::string reqauth, int ca);
-    void devoice(std::string chan, std::string nick, std::string auth, std::string reqnick, std::string reqauth, int ca);
+    void op(std::string chan, std::string mNick, std::string auth, std::string reqnick, std::string reqauth, int ca);
+    void deop(std::string chan, std::string mNick, std::string auth, std::string reqnick, std::string reqauth, int ca);
+    void voice(std::string chan, std::string mNick, std::string auth, std::string reqnick, std::string reqauth, int ca);
+    void devoice(std::string chan, std::string mNick, std::string auth, std::string reqnick, std::string reqauth, int ca);
 
-    void channelcommands(std::string nick, std::string auth, int ca);
+    void channelcommands(std::string mNick, std::string auth, int ca);
 
-    void OnUserJoin(std::string chan, std::string nick);
+    void OnUserJoin(std::string chan, std::string mNick);
 
     //void DBreplyinit();
 

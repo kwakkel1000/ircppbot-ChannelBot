@@ -908,21 +908,43 @@ void ChannelBot::resync(std::string chan, std::string nick, std::string auth, in
 	}
 }
 
-void ChannelBot::channelcommands(std::string nick, std::string auth, int ca)
+void ChannelBot::channelcommands(std::string mNick, std::string auth, int ca)
 {
     UsersInterface& U = Global::Instance().get_Users();
     std::string returnstring;
-    unsigned int length = U.GetWidth(nick);
-    unsigned int amount = U.GetWidthLength(nick);
-    std::string commandrpl = irc_reply("channelcommands", U.GetLanguage(nick));
-    returnstring = "NOTICE " + nick + " :";
+    unsigned int length = U.GetWidth(mNick);
+    unsigned int amount = U.GetWidthLength(mNick);
+    std::string commandrpl = irc_reply("channelcommands", U.GetLanguage(mNick));
+    returnstring = "NOTICE " + mNick + " :";
     for (unsigned int l = 0; l < (((length * amount) / 2) - commandrpl.size()/2); l++)
     {
         returnstring = returnstring + " ";
     }
     returnstring = returnstring + commandrpl + "\r\n";
     Send(returnstring);
-    //vector<string> sortbinds = binds;
+
+	returnstring = "NOTICE " + mNick + " :";
+	returnstring = returnstring + fillspace("bind", 20);
+	returnstring = returnstring + fillspace("command", 20);
+	returnstring = returnstring + "access\r\n";
+	Send(returnstring);
+	std::vector< std::string > binds = DatabaseData::Instance().GetBindVectorByBindName(command_table);
+	sort (binds.begin(), binds.end());
+	for (unsigned int binds_it = 0; binds_it < binds.size(); binds_it++)
+	{
+		std::string bind_access = convertInt(DatabaseData::Instance().GetAccessByBindNameAndBind(command_table, binds[binds_it]));
+		std::string bind_command = DatabaseData::Instance().GetCommandByBindNameAndBind(command_table, binds[binds_it]);
+		if (bind_command != "")
+		{
+			returnstring = "NOTICE " + mNick + " :";
+			returnstring = returnstring + fillspace(binds[binds_it], 20);
+			returnstring = returnstring + fillspace(bind_command, 20);
+			returnstring = returnstring + bind_access + "\r\n";
+			Send(returnstring);
+		}
+	}
+
+    /*//vector<string> sortbinds = binds;
     std::vector< std::string > sortbinds = DatabaseData::Instance().GetBindVectorByBindName(command_table);
     sort (sortbinds.begin(), sortbinds.end());
     std::vector< std::string > command_reply_vector = lineout(sortbinds, amount, length);
@@ -930,7 +952,7 @@ void ChannelBot::channelcommands(std::string nick, std::string auth, int ca)
     {
         returnstring = "NOTICE " + nick + " :" + command_reply_vector[h] + "\r\n";
         Send(returnstring);
-    }
+    }*/
 }
 
 void ChannelBot::INVITE(std::vector< std::string > data)
