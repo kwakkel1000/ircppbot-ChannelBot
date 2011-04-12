@@ -94,12 +94,12 @@ void ChannelBot::ParseData(std::vector< std::string > data)
         {
             JOIN(data);
         }
-        if (data[1] == "NICK")      //NICK nickchange
+        /*if (data[1] == "NICK")      //NICK nickchange
         {
             NICK(data);
-        }
+        }*/
     }
-    if (data.size() >= 3)
+    /*if (data.size() >= 3)
     {
         if (data[1] == "QUIT")      //QUIT
         {
@@ -109,7 +109,7 @@ void ChannelBot::ParseData(std::vector< std::string > data)
         {
             PART(data);
         }
-    }
+    }*/
     if (data.size() >= 4)
     {
         if (data[1] == "INVITE")   //INVITE
@@ -117,13 +117,13 @@ void ChannelBot::ParseData(std::vector< std::string > data)
             INVITE(data);
         }
     }
-    if (data.size() >= 5)
+    /*if (data.size() >= 5)
     {
         if (data[1] == "KICK")      //KICK
         {
             KICK(data);
         }
-    }
+    }*/
 }
 
 void ChannelBot::ParsePrivmsg(std::string nick, std::string command, std::string chan, std::vector< std::string > args, int chantrigger)
