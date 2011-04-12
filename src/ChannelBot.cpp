@@ -975,7 +975,7 @@ void ChannelBot::JOIN(std::vector< std::string > data)
     {
         if (U.GetUid(nick) != "NULL")
         {
-            OnUserJoin(chan, nick);
+            //OnUserJoin(chan, nick);
         }
     }
 }
