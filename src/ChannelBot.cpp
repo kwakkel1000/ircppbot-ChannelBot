@@ -512,7 +512,10 @@ void ChannelBot::version(std::string chan, std::string nick, std::string auth, i
 
 void ChannelBot::uptime(std::string chan, std::string nick, std::string auth, int ca)
 {
-    std::string returnstr = "PRIVMSG " + chan + " :" + nick + ": Uptime: " + convertInt(Global::Instance().get_StartTime()) + "\r\n";
+	int uptime;
+    time_t t = time(0);
+    uptime = t - Global::Instance().get_StartTime();
+    std::string returnstr = "PRIVMSG " + chan + " :" + nick + ": Uptime: " + convertInt(uptime) + " seconds.\r\n";
     Send(returnstr);
 }
 
