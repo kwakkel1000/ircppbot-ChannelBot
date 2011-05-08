@@ -44,6 +44,7 @@ private:
     void myaccess(std::string mNick, std::string reqnick, std::string reqauth, int ca);
     void ping(std::string chan, std::string mNick, std::string auth, int ca);
     void version(std::string chan, std::string mNick, std::string auth, int ca);
+    void uptime(std::string chan, std::string mNick, std::string auth, int ca);
     void authme(std::string mNick, int ca);
     void up(std::string chan, std::string mNick, std::string auth, int ca);
     void down(std::string chan, std::string mNick, std::string auth, int ca);
