@@ -515,8 +515,85 @@ void ChannelBot::uptime(std::string chan, std::string nick, std::string auth, in
 	int uptime;
     time_t t = time(0);
     uptime = t - Global::Instance().get_StartTime();
-    std::string returnstr = "PRIVMSG " + chan + " :" + nick + ": Uptime: " + convertInt(uptime) + " seconds.\r\n";
-    Send(returnstr);
+    std::vector< int > _timevector = VectorTimeFromSecondsTime(uptime);
+	if (_timevector.size() == 6)
+	{
+		int iYear = _timevector[0];
+		int iWeek = _timevector[1];
+		int iDay = _timevector[2];
+		int iHour = _timevector[3];
+		int iMinutes = _timevector[4];
+		int iSeconds = _timevector[5];
+		std::string sYear = convertInt(iYear);
+		std::string sWeek = convertInt(iWeek);
+		std::string sDay = convertInt(iDay);
+		std::string sHour = convertInt(iHour);
+		std::string sMinutes = convertInt(iMinutes);
+		std::string sSeconds = convertInt(iSeconds);
+		std::string returnstring = "PRIVMSG " + chan + " :" + nick + ": Uptime: ";
+
+		if (iYear > 0)
+		{
+			returnstring = returnstring + sYear + " Year";
+			if (iYear > 1)
+			{
+				returnstring = returnstring + "s";
+			}
+			returnstring = returnstring + " ";
+		}
+		if (iWeek > 0)
+		{
+			returnstring = returnstring + sWeek + " Week";
+			if (iWeek > 1)
+			{
+				returnstring = returnstring + "s";
+			}
+			returnstring = returnstring + " ";
+		}
+		if (iDay > 0)
+		{
+			returnstring = returnstring + sDay + " Day";
+			if (iDay > 1)
+			{
+				returnstring = returnstring + "s";
+			}
+			returnstring = returnstring + " ";
+		}
+		if (iHour > 0)
+		{
+			returnstring = returnstring + sHour + " Hour";
+			if (iHour > 1)
+			{
+				returnstring = returnstring + "s";
+			}
+			returnstring = returnstring + " ";
+		}
+		if (iMinutes > 0)
+		{
+			returnstring = returnstring + sMinutes + " Minutes";
+			if (iMinutes > 1)
+			{
+				returnstring = returnstring + "s";
+			}
+			returnstring = returnstring + " ";
+		}
+		if (iSeconds > 0)
+		{
+			returnstring = returnstring + sSeconds + " Seconds";
+			if (iSeconds > 1)
+			{
+				returnstring = returnstring + "s";
+			}
+			returnstring = returnstring + " ";
+		}
+
+		returnstring = returnstring + "\r\n";
+		Send(returnstring);
+	}
+	else
+	{
+		// output::Instance().debugadd(_timevector.size() != 6);
+	}
 }
 
 void ChannelBot::authme(std::string nick, int ca)
