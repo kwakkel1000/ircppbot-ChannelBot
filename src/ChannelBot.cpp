@@ -570,7 +570,7 @@ void ChannelBot::uptime(std::string chan, std::string nick, std::string auth, in
 		}
 		if (iMinutes > 0)
 		{
-			returnstring = returnstring + sMinutes + " Minutes";
+			returnstring = returnstring + sMinutes + " Minute";
 			if (iMinutes > 1)
 			{
 				returnstring = returnstring + "s";
@@ -579,7 +579,7 @@ void ChannelBot::uptime(std::string chan, std::string nick, std::string auth, in
 		}
 		if (iSeconds > 0)
 		{
-			returnstring = returnstring + sSeconds + " Seconds";
+			returnstring = returnstring + sSeconds + " Second";
 			if (iSeconds > 1)
 			{
 				returnstring = returnstring + "s";
@@ -592,7 +592,7 @@ void ChannelBot::uptime(std::string chan, std::string nick, std::string auth, in
 	}
 	else
 	{
-		// output::Instance().debugadd(_timevector.size() != 6);
+		// output::Instance().add("_timevector.size() != 6", 1);
 	}
 }
 
