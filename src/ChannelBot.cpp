@@ -1013,19 +1013,19 @@ void ChannelBot::resync(std::string chan, std::string nick, std::string auth, in
                     Send(returnstring);
                 }
             }
-            else if (access < C.GetGiveops(chan))
-            {
-                if (C.GetOp(chan, nicks[i]) == false)
-                {
-                    std::string returnstring = "MODE " + chan + " -o " + nicks[i] + "\r\n";
-                    Send(returnstring);
-                }
-            }
             else if (access < C.GetGivevoice(chan))
             {
                 if (C.GetVoice(chan, nicks[i]) == false)
                 {
                     std::string returnstring = "MODE " + chan + " -v " + nicks[i] + "\r\n";
+                    Send(returnstring);
+                }
+            }
+            else if (access < C.GetGiveops(chan))
+            {
+                if (C.GetOp(chan, nicks[i]) == false)
+                {
+                    std::string returnstring = "MODE " + chan + " -o " + nicks[i] + "\r\n";
                     Send(returnstring);
                 }
             }
