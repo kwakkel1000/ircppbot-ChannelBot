@@ -780,6 +780,7 @@ void ChannelBot::devoice(std::string chan, std::string nick, std::string auth, s
 void ChannelBot::users(std::string chan, std::string nick, std::string auth, int ca)
 {
     ChannelsInterface& C = Global::Instance().get_Channels();
+    UsersInterface& U = Global::Instance().get_Users();
     std::vector< std::string > auths = C.GetAuths(chan);
     sort(auths.begin(), auths.end());
     std::string returnstr;
@@ -808,11 +809,55 @@ void ChannelBot::users(std::string chan, std::string nick, std::string auth, int
             }
         }
     }
+    /*unsigned int length = U.GetWidth(nick);
+    unsigned int amount = U.GetWidthLength(nick);
+    std::string commandrpl = irc_reply("USERS", U.GetLanguage(nick));
+    returnstr = "NOTICE " + nick + " :";
+    for (unsigned int l = 0; l < (((length * amount) / 2) - commandrpl.size()/2); l++)
+    {
+        returnstr = returnstr + " ";
+    }
+    returnstr = returnstr + commandrpl + "\r\n";
+    Send(returnstr);
     for (unsigned int i = 0; i < sortauths.size(); i++)
     {
-        returnstr = "NOTICE " + nick + " :" + convertInt(sortaccess[i]) + "    " + sortauths[i] + "\r\n";
+        returnstr = "NOTICE " + nick + " :" + fillspace(convertInt(sortaccess[i]), 20) + sortauths[i] + "\r\n";
         Send(returnstr);
     }
+    std::string nousersrpl = irc_reply("NUMBER_USERS", U.GetLanguage(nick));
+    nousersrpl = nousersrpl + " " + convertInt(sortauths.size());
+    returnstr = "NOTICE " + nick + " :";
+    for (unsigned int l = 0; l < (((length * amount) / 2) - nousersrpl.size()/2); l++)
+    {
+        returnstr = returnstr + " ";
+    }
+    returnstr = returnstr + nousersrpl + "\r\n";
+    Send(returnstr);*/
+
+    unsigned int length = U.GetWidth(nick);
+    std::string commandrpl = irc_reply("USERS", U.GetLanguage(nick));
+    commandrpl = commandrpl + " " + chan;
+    returnstr = "NOTICE " + nick + " :";
+    for (unsigned int l = 0; l < (((length * 2) / 2) - commandrpl.size()/2); l++)
+    {
+        returnstr = returnstr + " ";
+    }
+    returnstr = returnstr + commandrpl + "\r\n";
+    Send(returnstr);
+    for (unsigned int i = 0; i < sortauths.size(); i++)
+    {
+        returnstr = "NOTICE " + nick + " :" + fillspace(convertInt(sortaccess[i]), length) + sortauths[i] + "\r\n";
+        Send(returnstr);
+    }
+    std::string nousersrpl = irc_reply("NUMBER_USERS", U.GetLanguage(nick));
+    nousersrpl = nousersrpl + " " + convertInt(sortauths.size());
+    returnstr = "NOTICE " + nick + " :";
+    for (unsigned int l = 0; l < (((length * 2) / 2) - nousersrpl.size()/2); l++)
+    {
+        returnstr = returnstr + " ";
+    }
+    returnstr = returnstr + nousersrpl + "\r\n";
+    Send(returnstr);
 }
 
 void ChannelBot::kickuser(std::string chan, std::string nick, std::string auth, std::string reqnick, std::string reqauth, std::string reason, int ca)
@@ -949,7 +994,7 @@ void ChannelBot::up(std::string chan, std::string nick, std::string auth, int ca
 
 void ChannelBot::down(std::string chan, std::string nick, std::string auth, int ca)
 {
-    ChannelsInterface& C = Global::Instance().get_Channels();
+    //ChannelsInterface& C = Global::Instance().get_Channels();
     UsersInterface& U = Global::Instance().get_Users();
     std::string reply_string;
     //if (C.GetOp(chan, nick) == true && C.GetVoice(chan, nick) == true)
