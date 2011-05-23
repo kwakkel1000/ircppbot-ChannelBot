@@ -124,13 +124,17 @@ void ChannelBot::parse_privmsg()
 
 void ChannelBot::WhoisLoop()
 {
+	std::string sOutput;
+	std::pair< std::string, std::string > data;
     while(run)
     {
-    	std::pair< std::string, std::string > tmp = mpWhoisDataContainerInterface->GetWhoisQueue();
-    	std::string nick = tmp.first;
-    	std::string chan = tmp.second;
+    	data = mpWhoisDataContainerInterface->GetWhoisQueue();
+    	std::string nick = data.first;
+    	std::string chan = data.second;
 		std::string botnick = Global::Instance().get_BotNick();
 		UsersInterface& U = Global::Instance().get_Users();
+		sOutput = "void ChannelBot::WhoisLoop() nick: " + nick + " chan: " + chan;
+		Output::Instance().addOutput(sOutput, 3);
 		if (nick == botnick)
 		{
 		}
@@ -546,7 +550,7 @@ void ChannelBot::ParsePrivmsg(std::string nick, std::string command, std::string
 
 void ChannelBot::version(std::string chan, std::string nick, std::string auth, int ca)
 {
-    std::string returnstr = "PRIVMSG " + chan + " :" + nick + ": Tran V1.0.4 C++ IRC bot\r\n";
+    std::string returnstr = "PRIVMSG " + chan + " :" + nick + ": Tran V1.0.7 C++ IRC bot\r\n";
     Send(returnstr);
 }
 
