@@ -1,6 +1,7 @@
 #ifndef ChannelBot_h
 #define ChannelBot_h
 #include <core/ModuleBase.h>
+#include <interfaces/WhoisDataContainerInterface.h>
 #include <interfaces/DataInterface.h>
 #include <string>
 #include <vector>
@@ -8,6 +9,7 @@
 #include <boost/thread/thread.hpp>
 
 class DataInterface;
+class WhoisDataContainerInterface;
 class ChannelBot : public ModuleBase
 {
 public:
@@ -21,9 +23,11 @@ public:
 private:
 
     DataInterface* mpDataInterface;
+    WhoisDataContainerInterface* mpWhoisDataContainerInterface;
 
     void parse_raw();
     void parse_privmsg();
+    void WhoisLoop();
     void ParseData(std::vector< std::string > data);
     void ParsePrivmsg(std::string mNick, std::string command, std::string chan, std::vector< std::string > args, int chantrigger);
     void PING(std::vector<std::string> data);
@@ -77,6 +81,7 @@ private:
 
     boost::shared_ptr< boost::thread > raw_parse_thread;
     boost::shared_ptr< boost::thread > privmsg_parse_thread;
+    boost::shared_ptr< boost::thread > whois_loop_thread;
 };
 
 #endif // ChannelBot_h

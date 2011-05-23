@@ -24,10 +24,14 @@
 
 
 #include "include/ChannelBot.h"
+#include <management/Whois.h>
+#include <management/WhoisDataContainer.h>
 #include <core/Global.h>
+#include <core/Output.h>
 #include <core/DatabaseData.h>
 #include <iostream>
 #include <algorithm>
+#include <math.h>
 #include <boost/algorithm/string.hpp>
 
 extern "C" ModuleInterface* create()
@@ -59,6 +63,10 @@ void ChannelBot::Init(DataInterface* pData)
     channelbottrigger = Global::Instance().get_ConfigReader().GetString("channelbottrigger");
     command_table = "ChannelBotCommands";
     longtime = 100;
+    mpWhoisDataContainerInterface = new WhoisDataContainer();
+    mpWhoisDataContainerInterface->Init();
+    Whois::Instance().AddConsumer(mpWhoisDataContainerInterface);
+
 
     /*int Tijd;
     time_t t= time(0);
@@ -90,6 +98,8 @@ void ChannelBot::read()
     raw_parse_thread = boost::shared_ptr<boost::thread>(new boost::thread(boost::bind(&ChannelBot::parse_raw, this)));
     assert(!privmsg_parse_thread);
     privmsg_parse_thread = boost::shared_ptr<boost::thread>(new boost::thread(boost::bind(&ChannelBot::parse_privmsg, this)));
+    assert(!whois_loop_thread);
+    whois_loop_thread = boost::shared_ptr<boost::thread>(new boost::thread(boost::bind(&ChannelBot::WhoisLoop, this)));
 }
 
 void ChannelBot::parse_raw()
@@ -111,19 +121,42 @@ void ChannelBot::parse_privmsg()
         PRIVMSG(data, channelbottrigger);
     }
 }
+
+void ChannelBot::WhoisLoop()
+{
+    while(run)
+    {
+    	std::pair< std::string, std::string > tmp = mpWhoisDataContainerInterface->GetWhoisQueue();
+    	std::string nick = tmp.first;
+    	std::string chan = tmp.second;
+		std::string botnick = Global::Instance().get_BotNick();
+		UsersInterface& U = Global::Instance().get_Users();
+		if (nick == botnick)
+		{
+		}
+		else
+		{
+			if (U.GetUid(nick) != "NULL")
+			{
+				OnUserJoin(chan, nick);
+			}
+		}
+    }
+}
+
 void ChannelBot::ParseData(std::vector< std::string > data)
 {
-    if (data.size() == 3)
+    /*if (data.size() == 3)
     {
         if (data[1] == "JOIN")      //JOIN
         {
             JOIN(data);
         }
-        /*if (data[1] == "NICK")      //NICK nickchange
+        if (data[1] == "NICK")      //NICK nickchange
         {
             NICK(data);
-        }*/
-    }
+        }
+    }*/
     /*if (data.size() >= 3)
     {
         if (data[1] == "QUIT")      //QUIT
@@ -446,9 +479,16 @@ void ChannelBot::ParsePrivmsg(std::string nick, std::string command, std::string
         if (args.size() >= 2)
         {
             unsigned int last_args_it = args.size() - 1;
-            for (unsigned int args_it = 0; args_it < last_args_it; args_it++)
+            if (fmod(convertString(args[last_args_it]), 1) == 0)
             {
-                adduser(chan, nick, auth, args[args_it], U.GetAuth(args[args_it]), convertString(args[last_args_it]), bind_access);
+				for (unsigned int args_it = 0; args_it < last_args_it; args_it++)
+				{
+					adduser(chan, nick, auth, args[args_it], U.GetAuth(args[args_it]), convertString(args[last_args_it]), bind_access);
+				}
+            }
+            else
+            {
+            	//help(integer);
             }
         }
         else
