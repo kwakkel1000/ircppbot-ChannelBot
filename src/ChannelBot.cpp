@@ -57,15 +57,15 @@ ChannelBot::~ChannelBot()
 
 void ChannelBot::Init(DataInterface* pData)
 {
+    mpWhoisDataContainerInterface = new WhoisDataContainer();
+    mpWhoisDataContainerInterface->Init();
+    Whois::Instance().AddConsumer(mpWhoisDataContainerInterface);
     mpDataInterface = pData;
     mpDataInterface->Init(true, false, false, true);
     Global::Instance().get_IrcData().AddConsumer(mpDataInterface);
     channelbottrigger = Global::Instance().get_ConfigReader().GetString("channelbottrigger");
     command_table = "ChannelBotCommands";
     longtime = 100;
-    mpWhoisDataContainerInterface = new WhoisDataContainer();
-    mpWhoisDataContainerInterface->Init();
-    Whois::Instance().AddConsumer(mpWhoisDataContainerInterface);
 
 
     /*int Tijd;
