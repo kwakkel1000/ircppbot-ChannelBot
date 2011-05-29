@@ -962,6 +962,7 @@ void ChannelBot::myaccess(std::string nick, std::string reqnick, std::string req
     std::string returnstring;
     unsigned int length = U.GetWidth(nick);
     unsigned int amount = 2;
+    unsigned int channel_count = 0;
     std::string commandrpl = irc_reply("myaccess", U.GetLanguage(nick));
     commandrpl = irc_reply_replace(commandrpl, "$nick$", reqnick);
     commandrpl = irc_reply_replace(commandrpl, "$auth$", reqauth);
@@ -976,12 +977,18 @@ void ChannelBot::myaccess(std::string nick, std::string reqnick, std::string req
         int access = C.GetAccess(sortchannels[i], reqauth);
         if (access > 0)
         {
+        	channel_count++;
             std::string tmpstring = sortchannels[i];
             tmpstring = fillspace(tmpstring, length) + convertInt(access);
-            std::string returnstr = "NOTICE " + nick + " :" + tmpstring + "\r\n";
-            Send(returnstr);
+            returnstring = "NOTICE " + nick + " :" + tmpstring + "\r\n";
+            Send(returnstring);
         }
     }
+
+    std::string nochannelsrpl = irc_reply("myaccess_number_channels", U.GetLanguage(nick));
+    nochannelsrpl = irc_reply_replace(nochannelsrpl, "$channels$", convertInt(channel_count));
+    returnstring = "NOTICE " + nick + " :" + centre(nochannelsrpl.size(), amount, length) + nochannelsrpl + "\r\n";
+    Send(returnstring);
 }
 
 void ChannelBot::up(std::string chan, std::string nick, std::string auth, int ca)
