@@ -84,11 +84,15 @@ void ChannelBot::stop()
 {
     run = false;
     mpDataInterface->stop();
-    std::cout << "ChannelBot::stop" << std::endl;
+    std::string sOutput;
+	sOutput = "ChannelBot::stop";
+	Output::Instance().addOutput(sOutput, 3);
     raw_parse_thread->join();
-    std::cout << "raw_parse_thread stopped" << std::endl;
+	sOutput = "raw_parse_thread stopped";
+	Output::Instance().addOutput(sOutput, 3);
     privmsg_parse_thread->join();
-    std::cout << "privmsg_parse_thread stopped" << std::endl;
+	sOutput = "privmsg_parse_thread stopped";
+	Output::Instance().addOutput(sOutput, 3);
 }
 
 void ChannelBot::read()
@@ -190,12 +194,13 @@ void ChannelBot::ParseData(std::vector< std::string > data)
 
 void ChannelBot::ParsePrivmsg(std::string nick, std::string command, std::string chan, std::vector< std::string > args, int chantrigger)
 {
-    //cout << "ChannelBot" << endl;
     UsersInterface& U = Global::Instance().get_Users();
     std::string auth = U.GetAuth(nick);
     std::string bind_command = DatabaseData::Instance().GetCommandByBindNameAndBind(command_table, command);
     int bind_access = DatabaseData::Instance().GetAccessByBindNameAndBind(command_table, command);
-    std::cout << bind_command << " " << bind_access << std::endl;
+    std::string sOutput;
+	sOutput = bind_command + " " + Output::Instance().StringFromInt(bind_access);
+	Output::Instance().addOutput(sOutput, 3);
 
     //auth
     if (boost::iequals(bind_command, "auth"))
@@ -550,7 +555,7 @@ void ChannelBot::ParsePrivmsg(std::string nick, std::string command, std::string
 
 void ChannelBot::version(std::string chan, std::string nick, std::string auth, int ca)
 {
-    std::string returnstr = "PRIVMSG " + chan + " :" + nick + ": Tran V1.0.7 C++ IRC bot\r\n";
+    std::string returnstr = "PRIVMSG " + chan + " :" + nick + ": Tran V1.1.0 C++ IRC bot\r\n";
     Send(returnstr);
 }
 
@@ -999,8 +1004,11 @@ void ChannelBot::up(std::string chan, std::string nick, std::string auth, int ca
     //bool giveop = false;
     //bool givevoice = false;
     int access = C.GetAccess(chan, auth);
-    std::cout << "giveops" << C.GetGiveops(chan) << std::endl;
-    std::cout << "access" << access << std::endl;
+    std::string sOutput;
+	sOutput = "giveops" + C.GetGiveops(chan);
+	Output::Instance().addOutput(sOutput, 3);
+	sOutput = "access" + access;
+	Output::Instance().addOutput(sOutput, 3);
     if (access >= C.GetGiveops(chan))
     {
         //if (C.GetOp(chan, nick) == false)
@@ -1205,6 +1213,7 @@ void ChannelBot::PART(std::vector< std::string > data)
 {/*
     vector<string> chan = Split(data[2], ":",true,true);
     string nick = HostmaskToNick(data);
+    std::string sOutput;
     if (nick == botnick)
     {
         vector<string> chanusers = C->GetNicks(chan[0]);
@@ -1215,6 +1224,8 @@ void ChannelBot::PART(std::vector< std::string > data)
             if (U->GetChannels(chanusers[i])[0] == "NULL")
             {
                 cout << "no channels left" << endl;
+	sOutput = "void ChannelBot::WhoisLoop() nick: " + nick + " chan: " + chan;
+	Output::Instance().addOutput(sOutput, 3);
                 U->DelUser(chanusers[i]);
             }
         }
@@ -1227,9 +1238,13 @@ void ChannelBot::PART(std::vector< std::string > data)
         if (U->GetChannels(nick)[0] == "NULL")
         {
             cout << "no channels left" << endl;
+	sOutput = "void ChannelBot::WhoisLoop() nick: " + nick + " chan: " + chan;
+	Output::Instance().addOutput(sOutput, 3);
             U->DelUser(nick);
         }
         cout << "PART" << endl;
+	sOutput = "void ChannelBot::WhoisLoop() nick: " + nick + " chan: " + chan;
+	Output::Instance().addOutput(sOutput, 3);
     }*/
 }
 
@@ -1237,6 +1252,7 @@ void ChannelBot::KICK(std::vector< std::string > data)
 {/*
     string chan = data[2];
     string nick = data[3];
+    std::string sOutput;
     if (nick == botnick)
     {
         vector<string> chanusers = C->GetNicks(chan);
@@ -1247,6 +1263,8 @@ void ChannelBot::KICK(std::vector< std::string > data)
             if (U->GetChannels(chanusers[i])[0] == "NULL")
             {
                 cout << "no channels left" << endl;
+	sOutput = "void ChannelBot::WhoisLoop() nick: " + nick + " chan: " + chan;
+	Output::Instance().addOutput(sOutput, 3);
                 U->DelUser(chanusers[i]);
             }
         }
@@ -1259,9 +1277,13 @@ void ChannelBot::KICK(std::vector< std::string > data)
         if (U->GetChannels(nick)[0] == "NULL")
         {
             cout << "no channels left" << endl;
+	sOutput = "void ChannelBot::WhoisLoop() nick: " + nick + " chan: " + chan;
+	Output::Instance().addOutput(sOutput, 3);
             U->DelUser(nick);
         }
         cout << "KICK" << endl;
+	sOutput = "void ChannelBot::WhoisLoop() nick: " + nick + " chan: " + chan;
+	Output::Instance().addOutput(sOutput, 3);
     }*/
 }
 
@@ -1301,6 +1323,7 @@ void ChannelBot::NICK(std::vector< std::string > data)
 {/*
     string oldnick = HostmaskToNick(data);
     vector<string> nick = Split(data[2], ":",true,true);
+    std::string sOutput;
     if (oldnick == botnick)
     {
         botnick = nick[0];
@@ -1312,6 +1335,8 @@ void ChannelBot::NICK(std::vector< std::string > data)
             C->AddNick(channels[i], nick[0]);
         }
         cout << "NICK" << endl;
+	sOutput = "void ChannelBot::WhoisLoop() nick: " + nick + " chan: " + chan;
+	Output::Instance().addOutput(sOutput, 3);
     }
     else
     {
@@ -1323,6 +1348,8 @@ void ChannelBot::NICK(std::vector< std::string > data)
             C->AddNick(channels[i], nick[0]);
         }
         cout << "NICK" << endl;
+	sOutput = "void ChannelBot::WhoisLoop() nick: " + nick + " chan: " + chan;
+	Output::Instance().addOutput(sOutput, 3);
     }*/
 }
 
@@ -1334,7 +1361,9 @@ void ChannelBot::OnUserJoin(std::string chan, std::string nick)
 
 void ChannelBot::timerrun()
 {
-    //cout << "channelbot::timerrun()" << endl;
+    std::string sOutput;
+	sOutput = "channelbot::timerrun()";
+	Output::Instance().addOutput(sOutput, 6);
     int Tijd;
     time_t t= time(0);
     Tijd = t;
@@ -1348,7 +1377,8 @@ void ChannelBot::timerrun()
     {
         if (timer_sec[i] < Tijd)
         {
-            std::cout << timer_command[i] << std::endl;
+			sOutput = timer_command[i];
+			Output::Instance().addOutput(sOutput, 6);
             timer_sec.erase(timer_sec.begin()+i);
             timer_command.erase(timer_command.begin()+i);
         }
@@ -1357,6 +1387,7 @@ void ChannelBot::timerrun()
 
 void ChannelBot::timerlong()
 {
+    std::string sOutput;
     int Tijd;
     time_t t= time(0);
     Tijd = t;
@@ -1365,7 +1396,8 @@ void ChannelBot::timerlong()
     {
         if (timer_long_sec[i] < Tijd)
         {
-            std::cout << "timer_long to timer " << timer_long_command[i] << std::endl;
+			sOutput = "timer_long to timer " + timer_long_command[i];
+			Output::Instance().addOutput(sOutput, 6);
             timer_sec.push_back(timer_long_sec[i]);
             timer_command.push_back(timer_long_command[i]);
             timer_long_sec.erase(timer_long_sec.begin()+i);
