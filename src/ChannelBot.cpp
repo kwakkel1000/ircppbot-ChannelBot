@@ -53,6 +53,8 @@ ChannelBot::~ChannelBot()
     stop();
     Global::Instance().get_IrcData().DelConsumer(mpDataInterface);
     delete mpDataInterface;
+    Whois::Instance().DelConsumer(mpWhoisDataContainerInterface);
+    delete mpWhoisDataContainerInterface;
 }
 
 void ChannelBot::Init(DataInterface* pData)
@@ -971,7 +973,8 @@ void ChannelBot::myaccess(std::string nick, std::string reqnick, std::string req
     std::string commandrpl = irc_reply("myaccess", U.GetLanguage(nick));
     commandrpl = irc_reply_replace(commandrpl, "$nick$", reqnick);
     commandrpl = irc_reply_replace(commandrpl, "$auth$", reqauth);
-    returnstring = "NOTICE " + nick + " :" + centre(commandrpl.size(), amount, length) + commandrpl + "\r\n";
+	returnstring = Global::Instance().get_Reply().irc_notice(nick, centre(commandrpl.size(), amount, length) + commandrpl);
+    //returnstring = "NOTICE " + nick + " :" + centre(commandrpl.size(), amount, length) + commandrpl + "\r\n";
     Send(returnstring);
 
     std::string channels;
@@ -983,16 +986,17 @@ void ChannelBot::myaccess(std::string nick, std::string reqnick, std::string req
         if (access > 0)
         {
         	channel_count++;
-            std::string tmpstring = sortchannels[i];
-            tmpstring = fillspace(tmpstring, length) + convertInt(access);
-            returnstring = "NOTICE " + nick + " :" + tmpstring + "\r\n";
+            //std::string tmpstring = sortchannels[i];
+            //tmpstring = fillspace(tmpstring, length) + convertInt(access);
+            returnstring = Global::Instance().get_Reply().irc_notice(nick, fillspace(sortchannels[i], length) + convertInt(access));
+            //returnstring = Global::Instance().get_Reply().irc_notice(nick, tmpstring);
             Send(returnstring);
         }
     }
 
     std::string nochannelsrpl = irc_reply("myaccess_number_channels", U.GetLanguage(nick));
     nochannelsrpl = irc_reply_replace(nochannelsrpl, "$channels$", convertInt(channel_count));
-    returnstring = "NOTICE " + nick + " :" + centre(nochannelsrpl.size(), amount, length) + nochannelsrpl + "\r\n";
+	returnstring = Global::Instance().get_Reply().irc_notice(nick, centre(nochannelsrpl.size(), amount, length) + nochannelsrpl);
     Send(returnstring);
 }
 
@@ -1363,7 +1367,7 @@ void ChannelBot::timerrun()
 {
     std::string sOutput;
 	sOutput = "channelbot::timerrun()";
-	Output::Instance().addOutput(sOutput, 6);
+	Output::Instance().addOutput(sOutput, 11);
     int Tijd;
     time_t t= time(0);
     Tijd = t;
@@ -1397,7 +1401,7 @@ void ChannelBot::timerlong()
         if (timer_long_sec[i] < Tijd)
         {
 			sOutput = "timer_long to timer " + timer_long_command[i];
-			Output::Instance().addOutput(sOutput, 6);
+			Output::Instance().addOutput(sOutput, 11);
             timer_sec.push_back(timer_long_sec[i]);
             timer_command.push_back(timer_long_command[i]);
             timer_long_sec.erase(timer_long_sec.begin()+i);
