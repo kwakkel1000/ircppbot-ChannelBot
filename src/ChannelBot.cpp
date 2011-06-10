@@ -541,6 +541,20 @@ void ChannelBot::ParsePrivmsg(std::string nick, std::string command, std::string
         overwatch(bind_command, command, chan, nick, auth, args);
     }
 
+    // stats
+    if (boost::iequals(bind_command, "stats"))
+    {
+        if (args.size() == 0)
+        {
+            stats(nick, auth, bind_access);
+        }
+        else
+        {
+            //help(bind_command);
+        }
+        overwatch(bind_command, command, chan, nick, auth, args);
+    }
+
     //simulate
     if (boost::iequals(bind_command, "simulate"))
     {
@@ -839,6 +853,164 @@ void ChannelBot::devoice(std::string chan, std::string nick, std::string auth, s
             std::string returnstring = "MODE " + chan + " -v " + reqnick + "\r\n";
             Send(returnstring);
         }
+    }
+}
+
+void ChannelBot::stats(std::string sNick, std::string sAuth, int iCa)
+{
+/*
+-Centravi- There are currently...
+-Centravi- ...4835 channel access entries.
+-Centravi- ...234 channels registered.
+-Centravi- ...7891 accounts in my database.
+-Centravi- ...25 accounts which have staff-access.
+-Centravi- ...278 language keys.
+-Centravi- ...16 languages this bot is (being) translated to.
+-Centravi- ...96 commands.
+-Centravi- ...109 command aliasses.
+-Centravi- ...2w52m38s this bot is running.
+*/
+
+
+    ChannelsInterface& C = Global::Instance().get_Channels();
+    UsersInterface& U = Global::Instance().get_Users();
+    int iChannelCount = 0;
+    int iUserCount = 0;
+    int iAuthCount = 0;
+    //int iOperAccessUsers = 0;
+    int iAccessCount = 0;
+
+    iChannelCount = C.GetChannels().size();
+    iAuthCount = U.GetAuths().size();
+    std::vector< std::string > vChannels = C.GetChannels();
+    for (unsigned int uiChannelsIndex = 0 ; uiChannelsIndex < vChannels.size(); uiChannelsIndex++ )
+    {
+        iUserCount = iUserCount + U.GetNicks(vChannels[uiChannelsIndex]).size();
+        std::vector< std::string > vAuths = C.GetAuths(vChannels[uiChannelsIndex]);
+        int access;
+        for (unsigned int uiAuthsIndex = 0 ; uiAuthsIndex < vAuths.size(); uiAuthsIndex++ )
+        {
+            access = C.GetAccess(vChannels[uiChannelsIndex], vAuths[uiAuthsIndex]);
+            if (access > 0)
+            {
+                iAccessCount++;
+            }
+        }
+    }
+    /*std::vector< std::string > vAuths = U.GetAuths();
+    for (unsigned int uiAuthsIndex = 0; uiAuthsIndex < vAuths.size(); uiAuthsIndex++)
+    {
+        if ()
+    }*/
+
+
+
+
+
+
+    std::string sReplyString;
+    // ChannelCount
+    sReplyString = irc_reply("STATS_CHANNEL_COUNT", U.GetLanguage(sNick));
+    sReplyString = irc_reply_replace(sReplyString, "$ChannelCount$", convertInt(iChannelCount));
+    Send(Global::Instance().get_Reply().irc_notice(sNick, sReplyString));
+
+    // UserCount
+    sReplyString = irc_reply("STATS_USER_COUNT", U.GetLanguage(sNick));
+    sReplyString = irc_reply_replace(sReplyString, "$UserCount$", convertInt(iUserCount));
+    Send(Global::Instance().get_Reply().irc_notice(sNick, sReplyString));
+
+    // UserCount
+    sReplyString = irc_reply("STATS_AUTH_COUNT", U.GetLanguage(sNick));
+    sReplyString = irc_reply_replace(sReplyString, "$AuthCount$", convertInt(iAuthCount));
+    Send(Global::Instance().get_Reply().irc_notice(sNick, sReplyString));
+
+    // UserCount
+    sReplyString = irc_reply("STATS_ACCESS_COUNT", U.GetLanguage(sNick));
+    sReplyString = irc_reply_replace(sReplyString, "$AccessCount$", convertInt(iAccessCount));
+    Send(Global::Instance().get_Reply().irc_notice(sNick, sReplyString));
+
+
+    // uptime
+
+    sReplyString = irc_reply("STATS_UPTIME", U.GetLanguage(sNick));
+    int uptime;
+    time_t t = time(0);
+    uptime = t - Global::Instance().get_StartTime();
+    std::vector< int > _timevector = VectorTimeFromSecondsTime(uptime);
+    if (_timevector.size() == 6)
+    {
+        int iYear = _timevector[0];
+        int iWeek = _timevector[1];
+        int iDay = _timevector[2];
+        int iHour = _timevector[3];
+        int iMinutes = _timevector[4];
+        int iSeconds = _timevector[5];
+        std::string sYear = convertInt(iYear);
+        std::string sWeek = convertInt(iWeek);
+        std::string sDay = convertInt(iDay);
+        std::string sHour = convertInt(iHour);
+        std::string sMinutes = convertInt(iMinutes);
+        std::string sSeconds = convertInt(iSeconds);
+
+        if (iYear > 0)
+        {
+            sReplyString = sReplyString + sYear + " Year";
+            if (iYear > 1)
+            {
+                sReplyString = sReplyString + "s";
+            }
+            sReplyString = sReplyString + " ";
+        }
+        if (iWeek > 0)
+        {
+            sReplyString = sReplyString + sWeek + " Week";
+            if (iWeek > 1)
+            {
+                sReplyString = sReplyString + "s";
+            }
+            sReplyString = sReplyString + " ";
+        }
+        if (iDay > 0)
+        {
+            sReplyString = sReplyString + sDay + " Day";
+            if (iDay > 1)
+            {
+                sReplyString = sReplyString + "s";
+            }
+            sReplyString = sReplyString + " ";
+        }
+        if (iHour > 0)
+        {
+            sReplyString = sReplyString + sHour + " Hour";
+            if (iHour > 1)
+            {
+                sReplyString = sReplyString + "s";
+            }
+            sReplyString = sReplyString + " ";
+        }
+        if (iMinutes > 0)
+        {
+            sReplyString = sReplyString + sMinutes + " Minute";
+            if (iMinutes > 1)
+            {
+                sReplyString = sReplyString + "s";
+            }
+            sReplyString = sReplyString + " ";
+        }
+        if (iSeconds > 0)
+        {
+            sReplyString = sReplyString + sSeconds + " Second";
+            if (iSeconds > 1)
+            {
+                sReplyString = sReplyString + "s";
+            }
+            sReplyString = sReplyString + " ";
+        }
+        Send(Global::Instance().get_Reply().irc_notice(sNick, sReplyString));
+    }
+    else
+    {
+        // output::Instance().add("_timevector.size() != 6", 1);
     }
 }
 
