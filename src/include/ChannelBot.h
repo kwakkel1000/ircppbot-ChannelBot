@@ -54,6 +54,7 @@ private:
     void down(std::string chan, std::string mNick, std::string auth, int ca);
     void resync(std::string chan, std::string mNick, std::string auth, int ca);
     void users(std::string chan, std::string mNick, std::string auth, int ca);
+    void readchannel(std::string chan, std::string nick, std::string auth, int ca);
     void kickuser(std::string chan, std::string mNick, std::string auth, std::string reqnick, std::string reqauth, std::string reason, int ca);
 
     void op(std::string chan, std::string mNick, std::string auth, std::string reqnick, std::string reqauth, int ca);

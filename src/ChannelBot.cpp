@@ -87,14 +87,14 @@ void ChannelBot::stop()
     run = false;
     mpDataInterface->stop();
     std::string sOutput;
-	sOutput = "ChannelBot::stop";
-	Output::Instance().addOutput(sOutput, 3);
+    sOutput = "ChannelBot::stop";
+    Output::Instance().addOutput(sOutput, 3);
     raw_parse_thread->join();
-	sOutput = "raw_parse_thread stopped";
-	Output::Instance().addOutput(sOutput, 3);
+    sOutput = "raw_parse_thread stopped";
+    Output::Instance().addOutput(sOutput, 3);
     privmsg_parse_thread->join();
-	sOutput = "privmsg_parse_thread stopped";
-	Output::Instance().addOutput(sOutput, 3);
+    sOutput = "privmsg_parse_thread stopped";
+    Output::Instance().addOutput(sOutput, 3);
 }
 
 void ChannelBot::read()
@@ -130,27 +130,27 @@ void ChannelBot::parse_privmsg()
 
 void ChannelBot::WhoisLoop()
 {
-	std::string sOutput;
-	std::pair< std::string, std::string > data;
+    std::string sOutput;
+    std::pair< std::string, std::string > data;
     while(run)
     {
-    	data = mpWhoisDataContainerInterface->GetWhoisQueue();
-    	std::string nick = data.first;
-    	std::string chan = data.second;
-		std::string botnick = Global::Instance().get_BotNick();
-		UsersInterface& U = Global::Instance().get_Users();
-		sOutput = "void ChannelBot::WhoisLoop() nick: " + nick + " chan: " + chan;
-		Output::Instance().addOutput(sOutput, 3);
-		if (nick == botnick)
-		{
-		}
-		else
-		{
-			if (U.GetUid(nick) != "NULL")
-			{
-				OnUserJoin(chan, nick);
-			}
-		}
+        data = mpWhoisDataContainerInterface->GetWhoisQueue();
+        std::string nick = data.first;
+        std::string chan = data.second;
+        std::string botnick = Global::Instance().get_BotNick();
+        UsersInterface& U = Global::Instance().get_Users();
+        sOutput = "void ChannelBot::WhoisLoop() nick: " + nick + " chan: " + chan;
+        Output::Instance().addOutput(sOutput, 3);
+        if (nick == botnick)
+        {
+        }
+        else
+        {
+            if (U.GetUid(nick) != "NULL")
+            {
+                OnUserJoin(chan, nick);
+            }
+        }
     }
 }
 
@@ -201,8 +201,8 @@ void ChannelBot::ParsePrivmsg(std::string nick, std::string command, std::string
     std::string bind_command = DatabaseData::Instance().GetCommandByBindNameAndBind(command_table, command);
     int bind_access = DatabaseData::Instance().GetAccessByBindNameAndBind(command_table, command);
     std::string sOutput;
-	sOutput = bind_command + " " + Output::Instance().StringFromInt(bind_access);
-	Output::Instance().addOutput(sOutput, 3);
+    sOutput = bind_command + " " + Output::Instance().StringFromInt(bind_access);
+    Output::Instance().addOutput(sOutput, 3);
 
     //auth
     if (boost::iequals(bind_command, "auth"))
@@ -374,6 +374,20 @@ void ChannelBot::ParsePrivmsg(std::string nick, std::string command, std::string
         overwatch(bind_command, command, chan, nick, auth, args);
     }
 
+    // readchannel
+    if (boost::iequals(bind_command, "readchannel"))
+    {
+        if (args.size() == 0)
+        {
+            readchannel(chan, nick, auth, bind_access);
+        }
+        else
+        {
+            //help(bind_command);
+        }
+        overwatch(bind_command, command, chan, nick, auth, args);
+    }
+
     //channelcommands
     if (boost::iequals(bind_command, "channelcommands"))
     {
@@ -492,14 +506,14 @@ void ChannelBot::ParsePrivmsg(std::string nick, std::string command, std::string
             unsigned int last_args_it = args.size() - 1;
             if (fmod(convertString(args[last_args_it]), 1) == 0)
             {
-				for (unsigned int args_it = 0; args_it < last_args_it; args_it++)
-				{
-					adduser(chan, nick, auth, args[args_it], U.GetAuth(args[args_it]), convertString(args[last_args_it]), bind_access);
-				}
+                for (unsigned int args_it = 0; args_it < last_args_it; args_it++)
+                {
+                    adduser(chan, nick, auth, args[args_it], U.GetAuth(args[args_it]), convertString(args[last_args_it]), bind_access);
+                }
             }
             else
             {
-            	//help(integer);
+                //help(integer);
             }
         }
         else
@@ -563,88 +577,88 @@ void ChannelBot::version(std::string chan, std::string nick, std::string auth, i
 
 void ChannelBot::uptime(std::string chan, std::string nick, std::string auth, int ca)
 {
-	int uptime;
+    int uptime;
     time_t t = time(0);
     uptime = t - Global::Instance().get_StartTime();
     std::vector< int > _timevector = VectorTimeFromSecondsTime(uptime);
-	if (_timevector.size() == 6)
-	{
-		int iYear = _timevector[0];
-		int iWeek = _timevector[1];
-		int iDay = _timevector[2];
-		int iHour = _timevector[3];
-		int iMinutes = _timevector[4];
-		int iSeconds = _timevector[5];
-		std::string sYear = convertInt(iYear);
-		std::string sWeek = convertInt(iWeek);
-		std::string sDay = convertInt(iDay);
-		std::string sHour = convertInt(iHour);
-		std::string sMinutes = convertInt(iMinutes);
-		std::string sSeconds = convertInt(iSeconds);
-		std::string returnstring = "PRIVMSG " + chan + " :" + nick + ": Uptime: ";
+    if (_timevector.size() == 6)
+    {
+        int iYear = _timevector[0];
+        int iWeek = _timevector[1];
+        int iDay = _timevector[2];
+        int iHour = _timevector[3];
+        int iMinutes = _timevector[4];
+        int iSeconds = _timevector[5];
+        std::string sYear = convertInt(iYear);
+        std::string sWeek = convertInt(iWeek);
+        std::string sDay = convertInt(iDay);
+        std::string sHour = convertInt(iHour);
+        std::string sMinutes = convertInt(iMinutes);
+        std::string sSeconds = convertInt(iSeconds);
+        std::string returnstring = "PRIVMSG " + chan + " :" + nick + ": Uptime: ";
 
-		if (iYear > 0)
-		{
-			returnstring = returnstring + sYear + " Year";
-			if (iYear > 1)
-			{
-				returnstring = returnstring + "s";
-			}
-			returnstring = returnstring + " ";
-		}
-		if (iWeek > 0)
-		{
-			returnstring = returnstring + sWeek + " Week";
-			if (iWeek > 1)
-			{
-				returnstring = returnstring + "s";
-			}
-			returnstring = returnstring + " ";
-		}
-		if (iDay > 0)
-		{
-			returnstring = returnstring + sDay + " Day";
-			if (iDay > 1)
-			{
-				returnstring = returnstring + "s";
-			}
-			returnstring = returnstring + " ";
-		}
-		if (iHour > 0)
-		{
-			returnstring = returnstring + sHour + " Hour";
-			if (iHour > 1)
-			{
-				returnstring = returnstring + "s";
-			}
-			returnstring = returnstring + " ";
-		}
-		if (iMinutes > 0)
-		{
-			returnstring = returnstring + sMinutes + " Minute";
-			if (iMinutes > 1)
-			{
-				returnstring = returnstring + "s";
-			}
-			returnstring = returnstring + " ";
-		}
-		if (iSeconds > 0)
-		{
-			returnstring = returnstring + sSeconds + " Second";
-			if (iSeconds > 1)
-			{
-				returnstring = returnstring + "s";
-			}
-			returnstring = returnstring + " ";
-		}
+        if (iYear > 0)
+        {
+            returnstring = returnstring + sYear + " Year";
+            if (iYear > 1)
+            {
+                returnstring = returnstring + "s";
+            }
+            returnstring = returnstring + " ";
+        }
+        if (iWeek > 0)
+        {
+            returnstring = returnstring + sWeek + " Week";
+            if (iWeek > 1)
+            {
+                returnstring = returnstring + "s";
+            }
+            returnstring = returnstring + " ";
+        }
+        if (iDay > 0)
+        {
+            returnstring = returnstring + sDay + " Day";
+            if (iDay > 1)
+            {
+                returnstring = returnstring + "s";
+            }
+            returnstring = returnstring + " ";
+        }
+        if (iHour > 0)
+        {
+            returnstring = returnstring + sHour + " Hour";
+            if (iHour > 1)
+            {
+                returnstring = returnstring + "s";
+            }
+            returnstring = returnstring + " ";
+        }
+        if (iMinutes > 0)
+        {
+            returnstring = returnstring + sMinutes + " Minute";
+            if (iMinutes > 1)
+            {
+                returnstring = returnstring + "s";
+            }
+            returnstring = returnstring + " ";
+        }
+        if (iSeconds > 0)
+        {
+            returnstring = returnstring + sSeconds + " Second";
+            if (iSeconds > 1)
+            {
+                returnstring = returnstring + "s";
+            }
+            returnstring = returnstring + " ";
+        }
 
-		returnstring = returnstring + "\r\n";
-		Send(returnstring);
-	}
-	else
-	{
-		// output::Instance().add("_timevector.size() != 6", 1);
-	}
+        returnstring = returnstring + "\r\n";
+        Send(returnstring);
+    }
+    else
+    {
+        // output::Instance().add("_timevector.size() != 6", 1);
+    }
 }
 
 void ChannelBot::authme(std::string nick, int ca)
@@ -860,30 +874,6 @@ void ChannelBot::users(std::string chan, std::string nick, std::string auth, int
             }
         }
     }
-    /*unsigned int length = U.GetWidth(nick);
-    unsigned int amount = U.GetWidthLength(nick);
-    std::string commandrpl = irc_reply("USERS", U.GetLanguage(nick));
-    returnstr = "NOTICE " + nick + " :";
-    for (unsigned int l = 0; l < (((length * amount) / 2) - commandrpl.size()/2); l++)
-    {
-        returnstr = returnstr + " ";
-    }
-    returnstr = returnstr + commandrpl + "\r\n";
-    Send(returnstr);
-    for (unsigned int i = 0; i < sortauths.size(); i++)
-    {
-        returnstr = "NOTICE " + nick + " :" + fillspace(convertInt(sortaccess[i]), 20) + sortauths[i] + "\r\n";
-        Send(returnstr);
-    }
-    std::string nousersrpl = irc_reply("NUMBER_USERS", U.GetLanguage(nick));
-    nousersrpl = nousersrpl + " " + convertInt(sortauths.size());
-    returnstr = "NOTICE " + nick + " :";
-    for (unsigned int l = 0; l < (((length * amount) / 2) - nousersrpl.size()/2); l++)
-    {
-        returnstr = returnstr + " ";
-    }
-    returnstr = returnstr + nousersrpl + "\r\n";
-    Send(returnstr);*/
 
     unsigned int length = U.GetWidth(nick);
     std::string commandrpl = irc_reply("USERS", U.GetLanguage(nick));
@@ -909,6 +899,28 @@ void ChannelBot::users(std::string chan, std::string nick, std::string auth, int
     }
     returnstr = returnstr + nousersrpl + "\r\n";
     Send(returnstr);
+}
+
+void ChannelBot::readchannel(std::string chan, std::string nick, std::string auth, int ca)
+{
+    ChannelsInterface& C = Global::Instance().get_Channels();
+    std::vector< std::string > vNicks = C.GetNicks(chan);
+    for (unsigned int i = 0 ; i < vNicks.size(); i++ )
+    {
+        int access = 0;
+        if (C.GetVoice(chan, vNicks[i]))
+        {
+            access = C.GetGivevoice(chan);
+        }
+        if (C.GetOp(chan, vNicks[i]))
+        {
+            access = C.GetGiveops(chan);
+        }
+        if (access > 0)
+        {
+            adduser(chan, nick, auth, vNicks[i], U.GetAuth(vNicks[i]), access, ca);
+        }
+    }
 }
 
 void ChannelBot::kickuser(std::string chan, std::string nick, std::string auth, std::string reqnick, std::string reqauth, std::string reason, int ca)
@@ -973,7 +985,7 @@ void ChannelBot::myaccess(std::string nick, std::string reqnick, std::string req
     std::string commandrpl = irc_reply("myaccess", U.GetLanguage(nick));
     commandrpl = irc_reply_replace(commandrpl, "$nick$", reqnick);
     commandrpl = irc_reply_replace(commandrpl, "$auth$", reqauth);
-	returnstring = Global::Instance().get_Reply().irc_notice(nick, centre(commandrpl.size(), amount, length) + commandrpl);
+    returnstring = Global::Instance().get_Reply().irc_notice(nick, centre(commandrpl.size(), amount, length) + commandrpl);
     //returnstring = "NOTICE " + nick + " :" + centre(commandrpl.size(), amount, length) + commandrpl + "\r\n";
     Send(returnstring);
 
@@ -985,7 +997,7 @@ void ChannelBot::myaccess(std::string nick, std::string reqnick, std::string req
         int access = C.GetAccess(sortchannels[i], reqauth);
         if (access > 0)
         {
-        	channel_count++;
+            channel_count++;
             //std::string tmpstring = sortchannels[i];
             //tmpstring = fillspace(tmpstring, length) + convertInt(access);
             returnstring = Global::Instance().get_Reply().irc_notice(nick, fillspace(sortchannels[i], length) + convertInt(access));
@@ -996,7 +1008,7 @@ void ChannelBot::myaccess(std::string nick, std::string reqnick, std::string req
 
     std::string nochannelsrpl = irc_reply("myaccess_number_channels", U.GetLanguage(nick));
     nochannelsrpl = irc_reply_replace(nochannelsrpl, "$channels$", convertInt(channel_count));
-	returnstring = Global::Instance().get_Reply().irc_notice(nick, centre(nochannelsrpl.size(), amount, length) + nochannelsrpl);
+    returnstring = Global::Instance().get_Reply().irc_notice(nick, centre(nochannelsrpl.size(), amount, length) + nochannelsrpl);
     Send(returnstring);
 }
 
@@ -1009,10 +1021,10 @@ void ChannelBot::up(std::string chan, std::string nick, std::string auth, int ca
     //bool givevoice = false;
     int access = C.GetAccess(chan, auth);
     std::string sOutput;
-	sOutput = "giveops" + C.GetGiveops(chan);
-	Output::Instance().addOutput(sOutput, 3);
-	sOutput = "access" + access;
-	Output::Instance().addOutput(sOutput, 3);
+    sOutput = "giveops" + C.GetGiveops(chan);
+    Output::Instance().addOutput(sOutput, 3);
+    sOutput = "access" + access;
+    Output::Instance().addOutput(sOutput, 3);
     if (access >= C.GetGiveops(chan))
     {
         //if (C.GetOp(chan, nick) == false)
@@ -1228,8 +1240,8 @@ void ChannelBot::PART(std::vector< std::string > data)
             if (U->GetChannels(chanusers[i])[0] == "NULL")
             {
                 cout << "no channels left" << endl;
-	sOutput = "void ChannelBot::WhoisLoop() nick: " + nick + " chan: " + chan;
-	Output::Instance().addOutput(sOutput, 3);
+    sOutput = "void ChannelBot::WhoisLoop() nick: " + nick + " chan: " + chan;
+    Output::Instance().addOutput(sOutput, 3);
                 U->DelUser(chanusers[i]);
             }
         }
@@ -1242,13 +1254,13 @@ void ChannelBot::PART(std::vector< std::string > data)
         if (U->GetChannels(nick)[0] == "NULL")
         {
             cout << "no channels left" << endl;
-	sOutput = "void ChannelBot::WhoisLoop() nick: " + nick + " chan: " + chan;
-	Output::Instance().addOutput(sOutput, 3);
+    sOutput = "void ChannelBot::WhoisLoop() nick: " + nick + " chan: " + chan;
+    Output::Instance().addOutput(sOutput, 3);
             U->DelUser(nick);
         }
         cout << "PART" << endl;
-	sOutput = "void ChannelBot::WhoisLoop() nick: " + nick + " chan: " + chan;
-	Output::Instance().addOutput(sOutput, 3);
+    sOutput = "void ChannelBot::WhoisLoop() nick: " + nick + " chan: " + chan;
+    Output::Instance().addOutput(sOutput, 3);
     }*/
 }
 
@@ -1267,8 +1279,8 @@ void ChannelBot::KICK(std::vector< std::string > data)
             if (U->GetChannels(chanusers[i])[0] == "NULL")
             {
                 cout << "no channels left" << endl;
-	sOutput = "void ChannelBot::WhoisLoop() nick: " + nick + " chan: " + chan;
-	Output::Instance().addOutput(sOutput, 3);
+    sOutput = "void ChannelBot::WhoisLoop() nick: " + nick + " chan: " + chan;
+    Output::Instance().addOutput(sOutput, 3);
                 U->DelUser(chanusers[i]);
             }
         }
@@ -1281,13 +1293,13 @@ void ChannelBot::KICK(std::vector< std::string > data)
         if (U->GetChannels(nick)[0] == "NULL")
         {
             cout << "no channels left" << endl;
-	sOutput = "void ChannelBot::WhoisLoop() nick: " + nick + " chan: " + chan;
-	Output::Instance().addOutput(sOutput, 3);
+    sOutput = "void ChannelBot::WhoisLoop() nick: " + nick + " chan: " + chan;
+    Output::Instance().addOutput(sOutput, 3);
             U->DelUser(nick);
         }
         cout << "KICK" << endl;
-	sOutput = "void ChannelBot::WhoisLoop() nick: " + nick + " chan: " + chan;
-	Output::Instance().addOutput(sOutput, 3);
+    sOutput = "void ChannelBot::WhoisLoop() nick: " + nick + " chan: " + chan;
+    Output::Instance().addOutput(sOutput, 3);
     }*/
 }
 
@@ -1339,8 +1351,8 @@ void ChannelBot::NICK(std::vector< std::string > data)
             C->AddNick(channels[i], nick[0]);
         }
         cout << "NICK" << endl;
-	sOutput = "void ChannelBot::WhoisLoop() nick: " + nick + " chan: " + chan;
-	Output::Instance().addOutput(sOutput, 3);
+    sOutput = "void ChannelBot::WhoisLoop() nick: " + nick + " chan: " + chan;
+    Output::Instance().addOutput(sOutput, 3);
     }
     else
     {
@@ -1352,8 +1364,8 @@ void ChannelBot::NICK(std::vector< std::string > data)
             C->AddNick(channels[i], nick[0]);
         }
         cout << "NICK" << endl;
-	sOutput = "void ChannelBot::WhoisLoop() nick: " + nick + " chan: " + chan;
-	Output::Instance().addOutput(sOutput, 3);
+    sOutput = "void ChannelBot::WhoisLoop() nick: " + nick + " chan: " + chan;
+    Output::Instance().addOutput(sOutput, 3);
     }*/
 }
 
@@ -1366,8 +1378,8 @@ void ChannelBot::OnUserJoin(std::string chan, std::string nick)
 void ChannelBot::timerrun()
 {
     std::string sOutput;
-	sOutput = "channelbot::timerrun()";
-	Output::Instance().addOutput(sOutput, 11);
+    sOutput = "channelbot::timerrun()";
+    Output::Instance().addOutput(sOutput, 11);
     int Tijd;
     time_t t= time(0);
     Tijd = t;
@@ -1381,8 +1393,8 @@ void ChannelBot::timerrun()
     {
         if (timer_sec[i] < Tijd)
         {
-			sOutput = timer_command[i];
-			Output::Instance().addOutput(sOutput, 6);
+            sOutput = timer_command[i];
+            Output::Instance().addOutput(sOutput, 6);
             timer_sec.erase(timer_sec.begin()+i);
             timer_command.erase(timer_command.begin()+i);
         }
@@ -1400,8 +1412,8 @@ void ChannelBot::timerlong()
     {
         if (timer_long_sec[i] < Tijd)
         {
-			sOutput = "timer_long to timer " + timer_long_command[i];
-			Output::Instance().addOutput(sOutput, 11);
+            sOutput = "timer_long to timer " + timer_long_command[i];
+            Output::Instance().addOutput(sOutput, 11);
             timer_sec.push_back(timer_long_sec[i]);
             timer_command.push_back(timer_long_command[i]);
             timer_long_sec.erase(timer_long_sec.begin()+i);
