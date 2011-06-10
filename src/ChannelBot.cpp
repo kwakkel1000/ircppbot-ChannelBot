@@ -904,6 +904,7 @@ void ChannelBot::users(std::string chan, std::string nick, std::string auth, int
 void ChannelBot::readchannel(std::string chan, std::string nick, std::string auth, int ca)
 {
     ChannelsInterface& C = Global::Instance().get_Channels();
+    UsersInterface& U = Global::Instance().get_Users();
     std::vector< std::string > vNicks = C.GetNicks(chan);
     for (unsigned int i = 0 ; i < vNicks.size(); i++ )
     {
