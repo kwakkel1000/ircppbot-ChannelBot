@@ -26,6 +26,7 @@
 #include "include/ChannelBot.h"
 #include <management/Whois.h>
 #include <management/WhoisDataContainer.h>
+#include <core/BotLib.h>
 #include <core/Global.h>
 #include <core/Output.h>
 #include <core/DatabaseData.h>
@@ -46,6 +47,10 @@ extern "C" void destroy(ModuleInterface* x)
 
 ChannelBot::ChannelBot()
 {
+    bParseRaw = true;
+    bParsePrivmsg = true;
+    // bParseRaw = true;
+    // bParseRaw = true;
 }
 
 ChannelBot::~ChannelBot()
@@ -169,10 +174,6 @@ void ChannelBot::ParseData(std::vector< std::string > data)
     }*/
     /*if (data.size() >= 3)
     {
-        if (data[1] == "QUIT")      //QUIT
-        {
-            QUIT(data);
-        }
         if (data[1] == "PART")      //PART
         {
             PART(data);
@@ -555,6 +556,28 @@ void ChannelBot::ParsePrivmsg(std::string nick, std::string command, std::string
         overwatch(bind_command, command, chan, nick, auth, args);
     }
 
+    // set
+    if (boost::iequals(bind_command, "set"))
+    {
+        if (args.size() == 0)  // set list
+        {
+            set(chan, nick, auth, bind_access);
+        }
+        else if (args.size() == 1)  // set get value
+        {
+            set(chan, nick, auth, args[0], bind_access);
+        }
+        else if (args.size() == 2)  // set set value
+        {
+            set(chan, nick, auth, args[0], args[1], bind_access);
+        }
+        else
+        {
+            //help(bind_command);
+        }
+        overwatch(bind_command, command, chan, nick, auth, args);
+    }
+
     //simulate
     if (boost::iequals(bind_command, "simulate"))
     {
@@ -585,7 +608,7 @@ void ChannelBot::ParsePrivmsg(std::string nick, std::string command, std::string
 
 void ChannelBot::version(std::string chan, std::string nick, std::string auth, int ca)
 {
-    std::string returnstr = "PRIVMSG " + chan + " :" + nick + ": Tran V1.1.0 C++ IRC bot\r\n";
+    std::string returnstr = "PRIVMSG " + chan + " :" + nick + ": Tran V1.5.0 C++ IRC bot\r\n";
     Send(returnstr);
 }
 
@@ -665,7 +688,6 @@ void ChannelBot::uptime(std::string chan, std::string nick, std::string auth, in
             }
             returnstring = returnstring + " ";
         }
-
         returnstring = returnstring + "\r\n";
         Send(returnstring);
     }
@@ -750,9 +772,10 @@ void ChannelBot::changelevel(std::string chan, std::string nick, std::string aut
             std::string ChannelUuid = C.GetCid(chan);
             if ((ChannelUuid != "NULL") && (UserUuid != "NULL") && (reqaccess > 0))
             {
-                std::string sqlstring = "UPDATE users SET access = '" + convertInt(reqaccess) + "' WHERE ChannelUuid = '" + ChannelUuid + "' AND UserUuid = '" + UserUuid + "';";
+                //std::string sqlstring = "UPDATE users SET access = '" + convertInt(reqaccess) + "' WHERE ChannelUuid = '" + ChannelUuid + "' AND UserUuid = '" + UserUuid + "';";
                 C.SetAccess(chan, reqauth, reqaccess);
-                RawSql(sqlstring);
+                DatabaseData::Instance().UpdateData("users", "access", BotLib::StringFromInt(reqaccess), "ChannelUuid = '" + ChannelUuid + "' AND UserUuid = '" + UserUuid + "';");
+                //RawSql(sqlstring);
                 std::string sendstring = "NOTICE " + nick + " :user " + reqnick + "[" + reqauth + "] changed access to " + convertInt(reqaccess) + " access\r\n";
                 Send(sendstring);
             }
@@ -915,9 +938,9 @@ void ChannelBot::stats(std::string sNick, std::string sAuth, int iCa)
     Send(Global::Instance().get_Reply().irc_notice(sNick, sReplyString));
 
     // UserCount
-    sReplyString = irc_reply("STATS_USER_COUNT", U.GetLanguage(sNick));
+    /*sReplyString = irc_reply("STATS_USER_COUNT", U.GetLanguage(sNick));
     sReplyString = irc_reply_replace(sReplyString, "$UserCount$", convertInt(iUserCount));
-    Send(Global::Instance().get_Reply().irc_notice(sNick, sReplyString));
+    Send(Global::Instance().get_Reply().irc_notice(sNick, sReplyString));*/  // not working yet
 
     // UserCount
     sReplyString = irc_reply("STATS_AUTH_COUNT", U.GetLanguage(sNick));
@@ -1323,6 +1346,92 @@ void ChannelBot::resync(std::string chan, std::string nick, std::string auth, in
                 }
             }
         }
+    }
+}
+
+// set List
+void ChannelBot::set(std::string msChannel, std::string msNick, std::string msAuth, int miChannelAcess)
+{
+    ChannelsInterface& C = Global::Instance().get_Channels();
+    UsersInterface& U = Global::Instance().get_Users();
+    int iAccess = C.GetAccess(msChannel, msAuth);
+    if (iAccess >= miChannelAcess)
+    {
+
+        int iGiveOps = C.GetGiveops(msChannel);
+        int iGiveVoice = C.GetGivevoice(msChannel);
+
+        std::string sReplyString;
+        // GiveOps
+        sReplyString = irc_reply("SET_GIVE_OPS", U.GetLanguage(msNick));
+        sReplyString = fillspace(sReplyString, 20);
+        sReplyString = sReplyString + convertInt(iGiveOps);
+        Send(Global::Instance().get_Reply().irc_notice(msNick, sReplyString));
+
+        // GiveVoice
+        sReplyString = irc_reply("SET_GIVE_VOICE", U.GetLanguage(msNick));
+        sReplyString = fillspace(sReplyString, 20);
+        sReplyString = sReplyString + convertInt(iGiveVoice);
+        Send(Global::Instance().get_Reply().irc_notice(msNick, sReplyString));
+    }
+    else
+    {
+        // need more access;
+    }
+}
+
+// set Get Value
+void ChannelBot::set(std::string msChannel, std::string msNick, std::string msAuth, std::string msSetting, int miChannelAcess)
+{
+    ChannelsInterface& C = Global::Instance().get_Channels();
+    UsersInterface& U = Global::Instance().get_Users();
+    int iAccess = C.GetAccess(msChannel, msAuth);
+    if (iAccess >= miChannelAcess)
+    {
+        std::string sVariable;
+        std::string sReplyString;
+
+        // Show Setting
+        sReplyString = irc_reply("SET_VALUE_VARIABLE", U.GetLanguage(msNick));
+        sReplyString = irc_reply_replace(sReplyString, "$Variable$", sVariable);
+        Send(Global::Instance().get_Reply().irc_notice(msNick, sReplyString));
+    }
+    else
+    {
+        // need more access;
+    }
+}
+
+// set Setter
+void ChannelBot::set(std::string msChannel, std::string msNick, std::string msAuth, std::string msSetting, std::string msValue, int miChannelAcess)
+{
+    ChannelsInterface& C = Global::Instance().get_Channels();
+    UsersInterface& U = Global::Instance().get_Users();
+    int iAccess = C.GetAccess(msChannel, msAuth);
+    if (iAccess >= miChannelAcess)
+    {
+        if (boost::iequals(msSetting, "giveops") || boost::iequals(msSetting, "give_ops"))
+        {
+            C.SetSetting(msChannel, "giveops", msValue);
+            /*DatabaseData::Instance().UpdateData("channels", "giveops", msValue, "`channel` = '" + msChannel +"'");
+            C.SetGiveops(msChannel, );*/
+        }
+        if (boost::iequals(msSetting, "givevoice") || boost::iequals(msSetting, "give_voice"))
+        {
+            C.SetSetting(msChannel, "givevoice", msValue);
+            /*DatabaseData::Instance().UpdateData("channels", "givevoice", msValue, "`channel` = '" + msChannel +"'");
+            C.SetGivevoice(msChannel, BotLib::IntFromString(msValue));*/
+        }
+        if (boost::iequals(msSetting, "setters"))
+        {
+            C.SetSetting(msChannel, "setters", msValue);
+            /*DatabaseData::Instance().UpdateData("channels", "setters", msValue, "`channel` = '" + msChannel +"'");
+            C.SetSetters(msChannel, BotLib::IntFromString(msValue));*/
+        }
+    }
+    else
+    {
+        // need more access;
     }
 }
 

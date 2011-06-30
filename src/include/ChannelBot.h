@@ -41,31 +41,35 @@ private:
     void MODE(std::vector< std::string > data);
     void QUIT(std::vector< std::string > data);
 
-    void adduser(std::string chan, std::string mNick, std::string auth, std::string reqnick, std::string reqauth, int reqaccess, int ca);
-    void deluser(std::string chan, std::string mNick, std::string auth, std::string reqnick, std::string reqauth, int ca);
-    void changelevel(std::string chan, std::string mNick, std::string auth, std::string reqnick, std::string reqauth, int reqaccess, int ca);
-    void access(std::string chan, std::string mNick, std::string reqnick, std::string reqauth, int ca);
-    void myaccess(std::string mNick, std::string reqnick, std::string reqauth, int ca);
-    void ping(std::string chan, std::string mNick, std::string auth, int ca);
-    void version(std::string chan, std::string mNick, std::string auth, int ca);
-    void uptime(std::string chan, std::string mNick, std::string auth, int ca);
-    void authme(std::string mNick, int ca);
-    void up(std::string chan, std::string mNick, std::string auth, int ca);
-    void down(std::string chan, std::string mNick, std::string auth, int ca);
-    void resync(std::string chan, std::string mNick, std::string auth, int ca);
-    void stats(std::string sNick, std::string sAuth, int iCa);
-    void users(std::string chan, std::string mNick, std::string auth, int ca);
-    void readchannel(std::string chan, std::string nick, std::string auth, int ca);
-    void kickuser(std::string chan, std::string mNick, std::string auth, std::string reqnick, std::string reqauth, std::string reason, int ca);
+    void adduser(std::string chan, std::string mNick, std::string auth, std::string reqnick, std::string reqauth, int reqaccess, int miChannelAcess);
+    void deluser(std::string chan, std::string mNick, std::string auth, std::string reqnick, std::string reqauth, int miChannelAcess);
+    void changelevel(std::string chan, std::string mNick, std::string auth, std::string reqnick, std::string reqauth, int reqaccess, int miChannelAcess);
+    void access(std::string chan, std::string mNick, std::string reqnick, std::string reqauth, int miChannelAcess);
+    void myaccess(std::string mNick, std::string reqnick, std::string reqauth, int miChannelAcess);
+    void ping(std::string chan, std::string mNick, std::string auth, int miChannelAcess);
+    void version(std::string chan, std::string mNick, std::string auth, int miChannelAcess);
+    void uptime(std::string chan, std::string mNick, std::string auth, int miChannelAcess);
+    void authme(std::string mNick, int miChannelAcess);
+    void up(std::string chan, std::string mNick, std::string auth, int miChannelAcess);
+    void down(std::string chan, std::string mNick, std::string auth, int miChannelAcess);
+    void resync(std::string chan, std::string mNick, std::string auth, int miChannelAcess);
+    void stats(std::string sNick, std::string sAuth, int miChannelAcess);
+    void users(std::string chan, std::string mNick, std::string auth, int miChannelAcess);
+    void readchannel(std::string chan, std::string nick, std::string auth, int miChannelAcess);
+    void kickuser(std::string chan, std::string mNick, std::string auth, std::string reqnick, std::string reqauth, std::string reason, int miChannelAcess);
 
-    void op(std::string chan, std::string mNick, std::string auth, std::string reqnick, std::string reqauth, int ca);
-    void deop(std::string chan, std::string mNick, std::string auth, std::string reqnick, std::string reqauth, int ca);
-    void voice(std::string chan, std::string mNick, std::string auth, std::string reqnick, std::string reqauth, int ca);
-    void devoice(std::string chan, std::string mNick, std::string auth, std::string reqnick, std::string reqauth, int ca);
+    void set(std::string msChannel, std::string msNick, std::string msAuth, int miChannelAcess);
+    void set(std::string msChannel, std::string msNick, std::string msAuth, std::string msSetting, int miChannelAcess);
+    void set(std::string msChannel, std::string msNick, std::string msAuth, std::string msSetting, std::string msValue, int miChannelAcess);
 
-    void channelcommands(std::string mNick, std::string auth, int ca);
+    void op(std::string chan, std::string mNick, std::string auth, std::string reqnick, std::string reqauth, int miChannelAcess);
+    void deop(std::string chan, std::string mNick, std::string auth, std::string reqnick, std::string reqauth, int miChannelAcess);
+    void voice(std::string chan, std::string mNick, std::string auth, std::string reqnick, std::string reqauth, int miChannelAcess);
+    void devoice(std::string chan, std::string mNick, std::string auth, std::string reqnick, std::string reqauth, int miChannelAcess);
 
-    void OnUserJoin(std::string chan, std::string mNick);
+    void channelcommands(std::string msNick, std::string msAuth, int miChannelAcess);
+
+    void OnUserJoin(std::string msChan, std::string msNick);
 
     //void DBreplyinit();
 
