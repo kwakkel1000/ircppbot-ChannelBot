@@ -45,6 +45,11 @@ extern "C" void destroy(ModuleInterface* x)
     delete x;
 }
 
+/**
+ * Constructor
+ * Define what the booleans for parsing.
+ *
+ */
 ChannelBot::ChannelBot()
 {
     bParseRaw = true;
@@ -53,15 +58,30 @@ ChannelBot::ChannelBot()
     // bParseRaw = true;
 }
 
+/**
+ * Destructor
+ * stop the current threads.
+ * Remove our vars from the consumer objects and then delete these vars.
+ *
+ */
 ChannelBot::~ChannelBot()
 {
+    // stop threads
     stop();
+
+    // remove consumers
     Global::Instance().get_IrcData().DelConsumer(mpDataInterface);
     delete mpDataInterface;
     Whois::Instance().DelConsumer(mpWhoisDataContainerInterface);
     delete mpWhoisDataContainerInterface;
 }
 
+/**
+ * Initialisation
+ * Initialise some vars for later use
+ * @param pData the value to give to mpDataInterface
+ *
+ */
 void ChannelBot::Init(DataInterface* pData)
 {
     mpWhoisDataContainerInterface = new WhoisDataContainer();
@@ -87,6 +107,11 @@ void ChannelBot::Init(DataInterface* pData)
     DatabaseData::Instance().DatabaseData::AddBinds(command_table);
 }
 
+
+/**
+ * stops the running threads
+ *
+ */
 void ChannelBot::stop()
 {
     run = false;
@@ -102,6 +127,11 @@ void ChannelBot::stop()
     Output::Instance().addOutput(sOutput, 3);
 }
 
+/**
+ * sets run var to true, so while loops start to run
+ * Starts the threads to parse
+ *
+ */
 void ChannelBot::read()
 {
     run = true;
@@ -113,6 +143,11 @@ void ChannelBot::read()
     whois_loop_thread = boost::shared_ptr<boost::thread>(new boost::thread(boost::bind(&ChannelBot::WhoisLoop, this)));
 }
 
+
+/**
+ * Parses raw data queue to ParsData(data)
+ *
+ */
 void ChannelBot::parse_raw()
 {
     std::vector< std::string > data;
