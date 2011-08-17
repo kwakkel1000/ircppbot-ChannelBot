@@ -91,6 +91,7 @@ void ChannelBot::Init(DataInterface* pData)
     mpDataInterface->Init(true, false, false, true);
     Global::Instance().get_IrcData().AddConsumer(mpDataInterface);
     channelbottrigger = Global::Instance().get_ConfigReader().GetString("channelbottrigger");
+    command_table = Global::Instance().get_ConfigReader().GetString("channelbotcommandtable");
     command_table = "ChannelBotCommands";
     longtime = 100;
 
@@ -818,16 +819,16 @@ void ChannelBot::changelevel(std::string chan, std::string nick, std::string aut
     }
 }
 
-void ChannelBot::op(std::string chan, std::string nick, std::string auth, std::string reqnick, std::string reqauth, int ca)
+void ChannelBot::op(std::string chan, std::string nick, std::string auth, std::string reqnick, std::string msReqauth, int ca)
 {
     ChannelsInterface& C = Global::Instance().get_Channels();
     UsersInterface& U = Global::Instance().get_Users();
     int access = C.GetAccess(chan, auth);
     if (access >= C.GetGiveops(chan))
     {
-        if (boost::iequals(reqauth,"NULL") != true)
+        if (boost::iequals(msReqauth,"NULL") != true)
         {
-            int tmpaccess = C.GetAccess(chan, reqauth);
+            int tmpaccess = C.GetAccess(chan, msReqauth);
             if (tmpaccess < access || U.GetGod(nick) == 1)
             {
                 std::string returnstring = "MODE " + chan + " +o " + reqnick + "\r\n";
@@ -842,16 +843,16 @@ void ChannelBot::op(std::string chan, std::string nick, std::string auth, std::s
     }
 }
 
-void ChannelBot::deop(std::string chan, std::string nick, std::string auth, std::string reqnick, std::string reqauth, int ca)
+void ChannelBot::deop(std::string chan, std::string nick, std::string auth, std::string reqnick, std::string msReqauth, int ca)
 {
     ChannelsInterface& C = Global::Instance().get_Channels();
     UsersInterface& U = Global::Instance().get_Users();
     int access = C.GetAccess(chan, auth);
     if (access >= C.GetGiveops(chan))
     {
-        if (boost::iequals(reqauth,"NULL") != true)
+        if (boost::iequals(msReqauth,"NULL") != true)
         {
-            int tmpaccess = C.GetAccess(chan, reqauth);
+            int tmpaccess = C.GetAccess(chan, msReqauth);
             if (tmpaccess < access || U.GetGod(nick) == 1)
             {
                 std::string returnstring = "MODE " + chan + " -o " + reqnick + "\r\n";
@@ -866,16 +867,16 @@ void ChannelBot::deop(std::string chan, std::string nick, std::string auth, std:
     }
 }
 
-void ChannelBot::voice(std::string chan, std::string nick, std::string auth, std::string reqnick, std::string reqauth, int ca)
+void ChannelBot::voice(std::string chan, std::string nick, std::string auth, std::string reqnick, std::string msReqauth, int ca)
 {
     ChannelsInterface& C = Global::Instance().get_Channels();
     UsersInterface& U = Global::Instance().get_Users();
     int access = C.GetAccess(chan, auth);
     if (access >= C.GetGiveops(chan))
     {
-        if (boost::iequals(reqauth,"NULL") != true)
+        if (boost::iequals(msReqauth,"NULL") != true)
         {
-            int tmpaccess = C.GetAccess(chan, reqauth);
+            int tmpaccess = C.GetAccess(chan, msReqauth);
             if (tmpaccess < access || U.GetGod(nick) == 1)
             {
                 std::string returnstring = "MODE " + chan + " +v " + reqnick + "\r\n";
@@ -890,16 +891,16 @@ void ChannelBot::voice(std::string chan, std::string nick, std::string auth, std
     }
 }
 
-void ChannelBot::devoice(std::string chan, std::string nick, std::string auth, std::string reqnick, std::string reqauth, int ca)
+void ChannelBot::devoice(std::string chan, std::string nick, std::string auth, std::string reqnick, std::string msReqauth, int ca)
 {
     ChannelsInterface& C = Global::Instance().get_Channels();
     UsersInterface& U = Global::Instance().get_Users();
     int access = C.GetAccess(chan, auth);
     if (access >= C.GetGiveops(chan))
     {
-        if (boost::iequals(reqauth,"NULL") != true)
+        if (boost::iequals(msReqauth,"NULL") != true)
         {
-            int tmpaccess = C.GetAccess(chan, reqauth);
+            int tmpaccess = C.GetAccess(chan, msReqauth);
             if (tmpaccess < access || U.GetGod(nick) == 1)
             {
                 std::string returnstring = "MODE " + chan + " -v " + reqnick + "\r\n";
@@ -1686,10 +1687,37 @@ void ChannelBot::NICK(std::vector< std::string > data)
     }*/
 }
 
-void ChannelBot::OnUserJoin(std::string chan, std::string nick)
+/**
+ * Event User Join
+ * when a user joins a channel process them.
+ * @param msChan the channel the user joined
+ * @param msNick the nickname of the joined user
+ *
+ */
+void ChannelBot::OnUserJoin(std::string msChan, std::string msNick)
 {
     UsersInterface& U = Global::Instance().get_Users();
-    up(chan, nick, U.GetAuth(nick), 0);
+    ChannelsInterface& C = Global::Instance().get_Channels();
+    int access = C.GetAccess(msChan, U.GetAuth(msNick));
+    std::string sOutput;
+    sOutput = "giveops" + C.GetGiveops(msChan);
+    Output::Instance().addOutput(sOutput, 3);
+    sOutput = "access" + access;
+    Output::Instance().addOutput(sOutput, 3);
+    if (access >= C.GetGiveops(msChan))
+    {
+        {
+            std::string returnstring = "MODE " + msChan + " +o " + msNick + "\r\n";
+            Send(returnstring);
+        }
+    }
+    else if (access >= C.GetGivevoice(msChan))
+    {
+        {
+            std::string returnstring = "MODE " + msChan + " +v " + msNick + "\r\n";
+            Send(returnstring);
+        }
+    }
 }
 
 void ChannelBot::timerrun()
