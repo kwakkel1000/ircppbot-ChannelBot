@@ -197,17 +197,6 @@ void ChannelBot::WhoisLoop()
 
 void ChannelBot::ParseData(std::vector< std::string > data)
 {
-    /*if (data.size() == 3)
-    {
-        if (data[1] == "JOIN")      //JOIN
-        {
-            JOIN(data);
-        }
-        if (data[1] == "NICK")      //NICK nickchange
-        {
-            NICK(data);
-        }
-    }*/
     /*if (data.size() >= 3)
     {
         if (data[1] == "PART")      //PART
@@ -1330,55 +1319,63 @@ void ChannelBot::down(std::string chan, std::string nick, std::string auth, int 
     Send(reply_string);
 }
 
-void ChannelBot::resync(std::string chan, std::string nick, std::string auth, int ca)
+
+/**
+ * Command Resync
+ * Syncs all users with their access in the channel
+ * @param msChannel the channel for his action
+ * @param msNick the nickname of the user
+ * @param msAuth the authname of the user
+ * @param miChannelAccess ChannelAccess needed for this command
+ *
+ */
+void ChannelBot::resync(std::string msChannel, std::string msNick, std::string msAuth, int miChannelAcess)
 {
     ChannelsInterface& C = Global::Instance().get_Channels();
     UsersInterface& U = Global::Instance().get_Users();
-    std::vector< std::string > nicks = C.GetNicks(chan);
-    int access ;
-    for (unsigned int i = 0; i < nicks.size(); i++)
+    if (C.GetAccess(msChannel, msAuth) >= miChannelAcess)
     {
-        if (!boost::iequals(Global::Instance().get_BotNick(), nicks[i]))
+        std::vector< std::string > _vNicks = C.GetNicks(msChannel);
+        int _iAccess ;
+        for (unsigned int i = 0; i < _vNicks.size(); i++)
         {
-            access = C.GetAccess(chan, U.GetAuth(nicks[i]));
-            if (access >= C.GetGiveops(chan))
+            if (!boost::iequals(Global::Instance().get_BotNick(), _vNicks[i]))
             {
-                if (C.GetOp(chan, nicks[i]) == false)
+                _iAccess = C.GetAccess(msChannel, U.GetAuth(_vNicks[i]));
+                if (_iAccess >= C.GetGiveops(msChannel))
                 {
-                    std::string returnstring = "MODE " + chan + " +o " + nicks[i] + "\r\n";
-                    Send(returnstring);
+                    //if (C.GetOp(msChannel, _vNicks[i]) == false)
+                    {
+                        Send(Global::Instance().get_Reply().irc_mode(msChannel, "+o" + _vNicks[i]));
+                    }
                 }
-            }
-            else if (access >= C.GetGivevoice(chan))
-            {
-                if (C.GetVoice(chan, nicks[i]) == false)
+                else if (_iAccess >= C.GetGivevoice(msChannel))
                 {
-                    std::string returnstring = "MODE " + chan + " +v " + nicks[i] + "\r\n";
-                    Send(returnstring);
+                    //if (C.GetVoice(msChannel, _vNicks[i]) == false)
+                    {
+                        Send(Global::Instance().get_Reply().irc_mode(msChannel, "+v" + _vNicks[i]));
+                    }
                 }
-            }
-            if ((access < C.GetGiveops(chan)) && (access < C.GetGivevoice(chan)))
-            {
-                if (C.GetOp(chan, nicks[i]) == true || C.GetVoice(chan, nicks[i]) == true)
+                if ((_iAccess < C.GetGiveops(msChannel)) && (_iAccess < C.GetGivevoice(msChannel)))
                 {
-                    std::string returnstring = "MODE " + chan + " -ov " + nicks[i] + " " + nicks[i] + "\r\n";
-                    Send(returnstring);
+                    //if (C.GetOp(msChannel, _vNicks[i]) == true || C.GetVoice(msChannel, _vNicks[i]) == true)
+                    {
+                        Send(Global::Instance().get_Reply().irc_mode(msChannel, "-ov" + _vNicks[i] + " " + _vNicks[i]));
+                    }
                 }
-            }
-            else if (access < C.GetGivevoice(chan))
-            {
-                if (C.GetVoice(chan, nicks[i]) == false)
+                else if (_iAccess < C.GetGivevoice(msChannel))
                 {
-                    std::string returnstring = "MODE " + chan + " -v " + nicks[i] + "\r\n";
-                    Send(returnstring);
+                    //if (C.GetVoice(msChannel, _vNicks[i]) == false)
+                    {
+                        Send(Global::Instance().get_Reply().irc_mode(msChannel, "-v" + _vNicks[i]));
+                    }
                 }
-            }
-            else if (access < C.GetGiveops(chan))
-            {
-                if (C.GetOp(chan, nicks[i]) == false)
+                else if (_iAccess < C.GetGiveops(msChannel))
                 {
-                    std::string returnstring = "MODE " + chan + " -o " + nicks[i] + "\r\n";
-                    Send(returnstring);
+                    //if (C.GetOp(msChannel, _vNicks[i]) == false)
+                    {
+                        Send(Global::Instance().get_Reply().irc_mode(msChannel, "-o" + _vNicks[i]));
+                    }
                 }
             }
         }
@@ -1449,20 +1446,14 @@ void ChannelBot::set(std::string msChannel, std::string msNick, std::string msAu
         if (boost::iequals(msSetting, "giveops") || boost::iequals(msSetting, "give_ops"))
         {
             C.SetSetting(msChannel, "giveops", msValue);
-            /*DatabaseData::Instance().UpdateData("channels", "giveops", msValue, "`channel` = '" + msChannel +"'");
-            C.SetGiveops(msChannel, );*/
         }
         if (boost::iequals(msSetting, "givevoice") || boost::iequals(msSetting, "give_voice"))
         {
             C.SetSetting(msChannel, "givevoice", msValue);
-            /*DatabaseData::Instance().UpdateData("channels", "givevoice", msValue, "`channel` = '" + msChannel +"'");
-            C.SetGivevoice(msChannel, BotLib::IntFromString(msValue));*/
         }
         if (boost::iequals(msSetting, "setters"))
         {
             C.SetSetting(msChannel, "setters", msValue);
-            /*DatabaseData::Instance().UpdateData("channels", "setters", msValue, "`channel` = '" + msChannel +"'");
-            C.SetSetters(msChannel, BotLib::IntFromString(msValue));*/
         }
     }
     else
@@ -1471,26 +1462,47 @@ void ChannelBot::set(std::string msChannel, std::string msNick, std::string msAu
     }
 }
 
-void ChannelBot::channelcommands(std::string mNick, std::string auth, int ca)
+/**
+ * Command ChannelCommands
+ * returns all the channelcommands to a user
+ * @param msNick the nickname of the user
+ * @param msAuth the authname of the user
+ * @param miChannelAccess ChannelAccess needed for this command
+ * broken needs fix
+ *
+ */
+void ChannelBot::channelcommands(std::string msNick, std::string msAuth, int miChannelAcess)
 {
     UsersInterface& U = Global::Instance().get_Users();
     std::string returnstring;
-    unsigned int length = U.GetWidth(mNick);
-    unsigned int amount = U.GetWidthLength(mNick);
-    std::string commandrpl = irc_reply("channelcommands", U.GetLanguage(mNick));
-    returnstring = "NOTICE " + mNick + " :";
+    unsigned int _uiUserWidth = U.GetWidth(msNick);
+    unsigned int _uiUserCollums = U.GetCollums(msNick);
+    std::string _sReplyString;
+    _sReplyString = BotLib::Centre(irc_reply("channelcommands", U.GetLanguage(msNick)), 1, _uiUserWidth);
+    Send(Global::Instance().get_Reply().irc_notice(msNick, _sReplyString));
+
+    /*std::string commandrpl = irc_reply("channelcommands", U.GetLanguage(msNick));
+    returnstring = "NOTICE " + msNick + " :";
     for (unsigned int l = 0; l < (((length * amount) / 2) - commandrpl.size()/2); l++)
     {
         returnstring = returnstring + " ";
     }
     returnstring = returnstring + commandrpl + "\r\n";
-    Send(returnstring);
+    Send(returnstring);*/
 
-    returnstring = "NOTICE " + mNick + " :";
+    // needs reply strings
+    _sReplyString = fillspace("bind", 20);
+    _sReplyString = _sReplyString + fillspace("command", 20);
+    _sReplyString = _sReplyString + "access";
+    Send(Global::Instance().get_Reply().irc_notice(msNick, _sReplyString));
+
+
+    /*
+    returnstring = "NOTICE " + msNick + " :";
     returnstring = returnstring + fillspace("bind", 20);
     returnstring = returnstring + fillspace("command", 20);
     returnstring = returnstring + "access\r\n";
-    Send(returnstring);
+    Send(returnstring);*/
     std::vector< std::string > binds = DatabaseData::Instance().GetBindVectorByBindName(command_table);
     sort (binds.begin(), binds.end());
     for (unsigned int binds_it = 0; binds_it < binds.size(); binds_it++)
@@ -1499,31 +1511,33 @@ void ChannelBot::channelcommands(std::string mNick, std::string auth, int ca)
         std::string bind_command = DatabaseData::Instance().GetCommandByBindNameAndBind(command_table, binds[binds_it]);
         if (bind_command != "")
         {
-            returnstring = "NOTICE " + mNick + " :";
-            returnstring = returnstring + fillspace(binds[binds_it], 20);
-            returnstring = returnstring + fillspace(bind_command, 20);
-            returnstring = returnstring + bind_access + "\r\n";
-            Send(returnstring);
+            _sReplyString = fillspace(binds[binds_it], 20);
+            _sReplyString = _sReplyString + fillspace(bind_command, 20);
+            _sReplyString = _sReplyString + bind_access;
+            Send(Global::Instance().get_Reply().irc_notice(msNick, _sReplyString));
         }
     }
-
-    /*//vector<string> sortbinds = binds;
-    std::vector< std::string > sortbinds = DatabaseData::Instance().GetBindVectorByBindName(command_table);
-    sort (sortbinds.begin(), sortbinds.end());
-    std::vector< std::string > command_reply_vector = lineout(sortbinds, amount, length);
-    for (unsigned int h = 0; h < command_reply_vector.size(); h++)
-    {
-        returnstring = "NOTICE " + nick + " :" + command_reply_vector[h] + "\r\n";
-        Send(returnstring);
-    }*/
 }
 
-void ChannelBot::INVITE(std::vector< std::string > data)
+/**
+ * Event Invite
+ * when the bot gets invited join this channel
+ * @param mvRawIrcData the raw irc data
+ *
+ */
+void ChannelBot::INVITE(std::vector< std::string > mvRawIrcData)
 {
-    std::string returnstr = "JOIN " + data[3] + "\r\n";
-    Send(returnstr);
+    Send(Global::Instance().get_Reply().irc_join(mvRawIrcData[3]));
 }
 
+
+/**
+ * DEPRECATED
+ * Event User Join
+ * when a user joins a channel process them.
+ * @param data raw irc data
+ *
+ */
 void ChannelBot::JOIN(std::vector< std::string > data)
 {
     std::string botnick = Global::Instance().get_BotNick();
@@ -1707,15 +1721,13 @@ void ChannelBot::OnUserJoin(std::string msChan, std::string msNick)
     if (access >= C.GetGiveops(msChan))
     {
         {
-            std::string returnstring = "MODE " + msChan + " +o " + msNick + "\r\n";
-            Send(returnstring);
+            Send(Global::Instance().get_Reply().irc_mode(msChan, "+o " + msNick));
         }
     }
     else if (access >= C.GetGivevoice(msChan))
     {
         {
-            std::string returnstring = "MODE " + msChan + " +v " + msNick + "\r\n";
-            Send(returnstring);
+            Send(Global::Instance().get_Reply().irc_mode(msChan, "+v " + msNick));
         }
     }
 }
