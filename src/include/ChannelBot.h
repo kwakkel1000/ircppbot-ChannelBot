@@ -57,6 +57,7 @@ private:
     void users(std::string chan, std::string mNick, std::string auth, int miChannelAcess);
     void readchannel(std::string chan, std::string nick, std::string auth, int miChannelAcess);
     void kickuser(std::string chan, std::string mNick, std::string auth, std::string reqnick, std::string reqauth, std::string reason, int miChannelAcess);
+    void InviteMe(std::string msChannel, std::string msNick, std::string msAuth, int miChannelAcess);
 
     void set(std::string msChannel, std::string msNick, std::string msAuth, int miChannelAcess);
     void set(std::string msChannel, std::string msNick, std::string msAuth, std::string msSetting, int miChannelAcess);
