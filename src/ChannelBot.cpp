@@ -634,7 +634,7 @@ void ChannelBot::ParsePrivmsg(std::string nick, std::string command, std::string
 void ChannelBot::version(std::string chan, std::string nick, std::string auth, int ca)
 {
     Send(Global::Instance().get_Reply().irc_privmsg(chan, nick + ": Tran Core V2.5.1 C++ IRC bot"));
-    Send(Global::Instance().get_Reply().irc_privmsg(chan, nick + ": Tran ChannelBot V1.6.1 C++ IRC bot"));
+    Send(Global::Instance().get_Reply().irc_privmsg(chan, nick + ": Tran ChannelBot V1.6.2 C++ IRC bot"));
 }
 
 void ChannelBot::uptime(std::string chan, std::string nick, std::string auth, int ca)
@@ -1775,6 +1775,19 @@ void ChannelBot::OnUserJoin(std::string msChan, std::string msNick)
     ChannelsInterface& C = Global::Instance().get_Channels();
     int _iAccess = C.GetAccess(msChan, U.GetAuth(msNick));
 
+    if (_iAccess >= C.GetGiveops(msChan))
+    {
+        {
+            Send(Global::Instance().get_Reply().irc_mode(msChan, "+o " + msNick));
+        }
+    }
+    else if (_iAccess >= C.GetGivevoice(msChan))
+    {
+        {
+            Send(Global::Instance().get_Reply().irc_mode(msChan, "+v " + msNick));
+        }
+    }
+
     // autoinvite
     if (U.FirstJoin(msNick))
     {
@@ -1800,18 +1813,6 @@ void ChannelBot::OnUserJoin(std::string msChan, std::string msNick)
             std::string dummy = "dummy";
             std::string _sInfoText = "[" + dummy + "] " + "setinfo test";
             Send(Global::Instance().get_Reply().irc_privmsg(msChan, _sInfoText));
-        }
-    }
-    if (_iAccess >= C.GetGiveops(msChan))
-    {
-        {
-            Send(Global::Instance().get_Reply().irc_mode(msChan, "+o " + msNick));
-        }
-    }
-    else if (_iAccess >= C.GetGivevoice(msChan))
-    {
-        {
-            Send(Global::Instance().get_Reply().irc_mode(msChan, "+v " + msNick));
         }
     }
 }
