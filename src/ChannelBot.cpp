@@ -633,8 +633,8 @@ void ChannelBot::ParsePrivmsg(std::string nick, std::string command, std::string
 
 void ChannelBot::version(std::string chan, std::string nick, std::string auth, int ca)
 {
-    std::string returnstr = "PRIVMSG " + chan + " :" + nick + ": Tran V1.5.0 C++ IRC bot\r\n";
-    Send(returnstr);
+    Send(Global::Instance().get_Reply().irc_privmsg(chan, nick + ": Tran Core V2.5.1 C++ IRC bot"));
+    Send(Global::Instance().get_Reply().irc_privmsg(chan, nick + ": Tran ChannelBot V1.6.1 C++ IRC bot"));
 }
 
 void ChannelBot::uptime(std::string chan, std::string nick, std::string auth, int ca)
@@ -1791,6 +1791,14 @@ void ChannelBot::OnUserJoin(std::string msChan, std::string msNick)
                     }
                 }
             }
+        }
+    }
+    if (_iAccess > 0)
+    {
+        if (true)   // setinfo
+        {
+            std::string _sInfoText = "[" + "msNick" + "] " + "setinfo test";
+            Send(Global::Instance().get_Reply().irc_privmsg(msChan, _sInfoText));
         }
     }
     if (_iAccess >= C.GetGiveops(msChan))
