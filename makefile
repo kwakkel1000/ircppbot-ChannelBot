@@ -5,7 +5,7 @@ CXX_LDFLAGS 	=
 LIBRARIES 		= $(CXX_SYSLIBS)
 
 MODULE_NAME		= ChannelBot
-OBJECTS			= $(MODULE_NAME).o
+OBJECTS			= $(MODULE_NAME).o Channel.o Auth.o
 OUTPUT			= $(MODULE_NAME).so
 
 default: $(OUTPUT)
@@ -14,7 +14,7 @@ Release: all
 all: default
 
 
-$(OUTPUT): $(SRC_DIR)$(OBJECTS)
+$(OUTPUT): $(SRC_DIR)$(MODULE_NAME).o $(SRC_DIR)Channel.o $(SRC_DIR)Auth.o
 	$(CXX_LINK) -o $(LIB_DIR)$@ $(OBJECTS) $(LIBRARIES)
 
 update:

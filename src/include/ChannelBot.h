@@ -1,3 +1,28 @@
+//
+//
+//  @ Project : ircppbot ChannelBot
+//  @ File Name : ChannelBot.h
+//  @ Date : 4/18/2011
+//  @ Author : Gijs Kwakkel
+//
+//
+// Copyright (c) 2011 Gijs Kwakkel
+//
+// This program is free software; you can redistribute it and/or
+// modify it under the terms of the GNU General Public License
+// as published by the Free Software Foundation; either version 2
+// of the License, or (at your option) any later version.
+// This program is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+// GNU General Public License for more details.
+//
+// You should have received a copy of the GNU General Public License
+// along with this program; if not, write to the Free Software
+// Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
+//
+
+
 #ifndef ChannelBot_h
 #define ChannelBot_h
 #include <core/ModuleBase.h>
@@ -30,16 +55,12 @@ private:
     void WhoisLoop();
     void ParseData(std::vector< std::string > data);
     void ParsePrivmsg(std::string mNick, std::string command, std::string chan, std::vector< std::string > args, int chantrigger);
-    void PING(std::vector<std::string> data);
-    //void PRIVMSG(std::vector<std::string> data);
     void INVITE(std::vector< std::string > data);
     void WHOIS(std::vector< std::string > data);
     void JOIN(std::vector< std::string > data);
     void PART(std::vector< std::string > data);
     void KICK(std::vector< std::string > data);
-    void NICK(std::vector< std::string > data);
     void MODE(std::vector< std::string > data);
-    void QUIT(std::vector< std::string > data);
 
     void adduser(std::string chan, std::string mNick, std::string auth, std::string reqnick, std::string reqauth, int reqaccess, int miChannelAcess);
     void deluser(std::string chan, std::string mNick, std::string auth, std::string reqnick, std::string reqauth, int miChannelAcess);

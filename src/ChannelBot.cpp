@@ -227,7 +227,7 @@ void ChannelBot::ParsePrivmsg(std::string nick, std::string command, std::string
     std::string bind_command = DatabaseData::Instance().GetCommandByBindNameAndBind(command_table, command);
     int bind_access = DatabaseData::Instance().GetAccessByBindNameAndBind(command_table, command);
     std::string sOutput;
-    sOutput = bind_command + " " + Output::Instance().StringFromInt(bind_access);
+    sOutput = bind_command + " " + BotLib::StringFromInt(bind_access);
     Output::Instance().addOutput(sOutput, 3);
 
     //auth
@@ -1706,59 +1706,6 @@ void ChannelBot::MODE(std::vector< std::string > data)
     else
     {
 
-    }*/
-}
-
-void ChannelBot::QUIT(std::vector< std::string > data)
-{/*
-    string nick = HostmaskToNick(data);
-    if (nick == botnick)
-    {
-        U->~Users();
-        C->~Channels();
-    }
-    else
-    {
-        vector<string> channels = U->GetChannels(nick);
-        for ( unsigned int i = 0 ; i < channels.size(); i++ )
-        {
-            C->DelNick(channels[i], nick);
-        }
-        U->DelUser(nick);
-    }*/
-}
-
-void ChannelBot::NICK(std::vector< std::string > data)
-{/*
-    string oldnick = HostmaskToNick(data);
-    vector<string> nick = Split(data[2], ":",true,true);
-    std::string sOutput;
-    if (oldnick == botnick)
-    {
-        botnick = nick[0];
-        U->ChangeNick(oldnick, nick[0]);
-        vector<string> channels = U->GetChannels(nick[0]);
-        for ( unsigned int i = 0 ; i < channels.size(); i++ )
-        {
-            C->DelNick(channels[i], oldnick);
-            C->AddNick(channels[i], nick[0]);
-        }
-        cout << "NICK" << endl;
-    sOutput = "void ChannelBot::WhoisLoop() nick: " + nick + " chan: " + chan;
-    Output::Instance().addOutput(sOutput, 3);
-    }
-    else
-    {
-        U->ChangeNick(oldnick, nick[0]);
-        vector<string> channels = U->GetChannels(nick[0]);
-        for ( unsigned int i = 0 ; i < channels.size(); i++ )
-        {
-            C->DelNick(channels[i], oldnick);
-            C->AddNick(channels[i], nick[0]);
-        }
-        cout << "NICK" << endl;
-    sOutput = "void ChannelBot::WhoisLoop() nick: " + nick + " chan: " + chan;
-    Output::Instance().addOutput(sOutput, 3);
     }*/
 }
 
