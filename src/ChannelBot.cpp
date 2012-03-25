@@ -227,7 +227,7 @@ void ChannelBot::ParsePrivmsg(std::string nick, std::string command, std::string
     std::string bind_command = DatabaseData::Instance().GetCommandByBindNameAndBind(command_table, command);
     int bind_access = DatabaseData::Instance().GetAccessByBindNameAndBind(command_table, command);
     std::string sOutput;
-    sOutput = bind_command + " " + Output::Instance().StringFromInt(bind_access);
+    sOutput = bind_command + " " + BotLib::StringFromInt(bind_access);
     Output::Instance().addOutput(sOutput, 3);
 
     //auth
