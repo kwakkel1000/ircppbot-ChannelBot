@@ -1812,7 +1812,7 @@ void ChannelBot::OnUserJoin(std::string msChan, std::string msNick)
         {
             std::string dummy = "dummy";
             std::string _sInfoText = "[" + dummy + "] " + "setinfo test";
-            Send(Global::Instance().get_Reply().irc_privmsg(msChan, _sInfoText));
+//            Send(Global::Instance().get_Reply().irc_privmsg(msChan, _sInfoText));
         }
     }
 }
