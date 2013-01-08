@@ -51,8 +51,16 @@ class channelbot : public moduleinterface
         void stop();
         void init();
         void timerrun(){}
+        struct channelbotauth {
+            std::atomic<size_t> with;
+            std::atomic<size_t> columns;
+            std::string language;
+            std::atomic<bool> god;
+        };
 
     private:
+
+        std::map< std::string, channelbotauth > m_Channelbotauths;
 
         std::atomic<bool> m_Run;
         ircdata* m_IrcData;
@@ -98,12 +106,10 @@ class channelbot : public moduleinterface
         void changelevel(std::string chan, std::string mNick, std::string auth, std::string reqnick, std::string reqauth, int reqaccess, int miChannelAcess);
         void access(std::string chan, std::string mNick, std::string reqnick, std::string reqauth, int miChannelAcess);
         void myaccess(std::string mNick, std::string reqnick, std::string reqauth, int miChannelAcess);
-        void ping(std::string chan, std::string mNick, std::string auth, int miChannelAcess);
         */
         void version(std::string channelName, std::string userName);
         /*void version(std::string chan, std::string mNick, std::string auth, int miChannelAcess);
         void uptime(std::string chan, std::string mNick, std::string auth, int miChannelAcess);
-        void authme(std::string mNick, int miChannelAcess);
         void up(std::string chan, std::string mNick, std::string auth, int miChannelAcess);
         void down(std::string chan, std::string mNick, std::string auth, int miChannelAcess);
         void resync(std::string chan, std::string mNick, std::string auth, int miChannelAcess);
@@ -135,14 +141,12 @@ class channelbot : public moduleinterface
         std::vector< std::string > timer_long_command;
         int longtime;
 
-        boost::mutex parse_mutex;
-        bool run;
-        std::string channelbottrigger;
-        std::string command_table;
+*/
+        channelbotauth& addChannelbotauth(std::string userAuth);
+        bool renameChannelbotauth(std::string, std::string);
+        bool getChannelbotauth(channelbot::channelbotauth&, std::string);
+        void channelCommands(std::string, std::string);
 
-        boost::shared_ptr< boost::thread > raw_parse_thread;
-        boost::shared_ptr< boost::thread > privmsg_parse_thread;
-        boost::shared_ptr< boost::thread > whois_loop_thread;*/
 };
 
 #endif // SRC_INCLUDE_CHANNELBOT_H

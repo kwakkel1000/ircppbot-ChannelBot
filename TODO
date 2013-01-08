@@ -1,0 +1,20 @@
+?set
+?set commands
+command	access
+access	global(300)
+kick	local(200)
+
+?set commands access 400
+
+
+
+
+commands 
+if (local != NULL)
+access = local;
+}
+else
+{
+access = global;
+global = binds::instance().getBind(bla bla)
+(if local not set)
