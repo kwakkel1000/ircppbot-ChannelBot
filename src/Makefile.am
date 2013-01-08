@@ -1,0 +1,18 @@
+## Process this file with automake to produce Makefile.in
+
+GIT_VERSION = $(shell sh -c 'git describe --abbrev=4 --dirty --always')
+
+ACLOCAL_AMFLAGS = -I ../m4
+
+CHANNELBOTLIBRARY_VERSION=0:0:0
+
+lib_LTLIBRARIES = libchannelbot.la
+
+libchannelbot_includedir = $(includedir)/include
+
+libchannelbot_include_HEADERS = \
+        include/channelbot.h
+
+libchannelbot_la_SOURCES = \
+        channelbot.cpp
+
