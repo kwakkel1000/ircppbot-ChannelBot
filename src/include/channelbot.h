@@ -51,16 +51,8 @@ class channelbot : public moduleinterface
         void stop();
         void init();
         void timerrun(){}
-        struct channelbotauth {
-            std::atomic<size_t> with;
-            std::atomic<size_t> columns;
-            std::string language;
-            std::atomic<bool> god;
-        };
 
     private:
-
-        std::map< std::string, channelbotauth > m_Channelbotauths;
 
         std::atomic<bool> m_Run;
         ircdata* m_IrcData;
@@ -142,10 +134,9 @@ class channelbot : public moduleinterface
         int longtime;
 
 */
-        channelbotauth& addChannelbotauth(std::string userAuth);
-        bool renameChannelbotauth(std::string, std::string);
-        bool getChannelbotauth(channelbot::channelbotauth&, std::string);
         void channelCommands(std::string, std::string);
+        bool nickFromHostmask(std::string& data);
+        bool deleteFirst(std::string& data, std::string character);
 
 };
 

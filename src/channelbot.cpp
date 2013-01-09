@@ -29,6 +29,10 @@
 #include <ircppbot/irc.h>
 #include <ircppbot/reply.h>
 #include <ircppbot/binds.h>
+#include <ircppbot/users.h>
+#include <ircppbot/auths.h>
+#include <ircppbot/channels.h>
+
 #include <gframe/output.h>
 #include <gframe/versions.h>
 #include <gframe/glib.h>
@@ -80,26 +84,6 @@ void channelbot::read()
     m_ModesThread = std::shared_ptr<std::thread>(new std::thread(std::bind(&channelbot::parseModes, this)));
     m_EventsThread = std::shared_ptr<std::thread>(new std::thread(std::bind(&channelbot::parseEvents, this)));
     m_PrivmsgThread = std::shared_ptr<std::thread>(new std::thread(std::bind(&channelbot::parsePrivmsg, this)));
-    /*int Tijd;
-    time_t t;
-    t = time(0);
-    Tijd = t;
-    int iRefreshTime = 0;*/
-    //while (m_Run)
-    {
-        /*iRefreshTime++;
-        if (iRefreshTime >= 3600)
-        {
-            iRefreshTime = 0;
-            std::vector< std::string > vChannels = C.GetChannels();
-            for (size_t iChannelsIndex = 0; iChannelsIndex < vChannels.size(); iChannelsIndex++)
-            {
-                RefreshChannel(vChannels[iChannelsIndex]);
-                usleep(5 * 100000); // 5 * 1000000 5 seconds between each channel
-            }
-        }*/
-        //usleep(1000000);
-    }
 }
 
 /**
@@ -111,11 +95,11 @@ void channelbot::stop()
     m_Run = false;
     m_IrcData->stop();
     output::instance().addOutput("channelbot::stop", 6);
-    //m_ModesThread->join();
+    m_ModesThread->join();
     output::instance().addOutput("channelbot::stop m_ModesThread stopped", 6);
-    //m_EventsThread->join();
+    m_EventsThread->join();
     output::instance().addOutput("channelbot::stop m_EventsThread stopped", 6);
-    //m_PrivmsgThread->join();
+    m_PrivmsgThread->join();
     output::instance().addOutput("channelbot::stop m_PrivmsgThread stopped", 6);
     irc::instance().delConsumer(m_IrcData);
     delete m_IrcData;
@@ -155,6 +139,9 @@ void channelbot::init()
     timer_long_command.push_back("time 20 from now");*/
     //timerlong();
     //DatabaseData::Instance().DatabaseData::AddBinds(command_table);
+    binds::instance().setBind("version", "version", 0, mNAME);
+    binds::instance().setBind("commands", "channelcommands", 0, mNAME);
+    binds::instance().setBind("ping", "ping", 0, mNAME);
 }
 
 void channelbot::parseModes()
@@ -164,6 +151,10 @@ void channelbot::parseModes()
     while(m_Run)
     {
         data = m_IrcData->getModesQueue();
+        if (!m_Run)
+        {
+            return;
+        }
         /*if (data.size() == 4)
         {
             if (data[1] == "MODE")      //KICK
@@ -195,6 +186,10 @@ void channelbot::parseEvents()
     while(m_Run)
     {
         data = m_IrcData->getEventsQueue();
+        if (!m_Run)
+        {
+            return;
+        }
         /*if (data.size() == 3)
         {
             if (data[1] == "NICK")
@@ -261,554 +256,562 @@ void channelbot::parsePrivmsg()
     while(m_Run)
     {
         data = m_IrcData->getPrivmsgQueue();
-    int parsed = 0;
-    std::string trigger = configreader::instance().getString("channelbottrigger");
-    std::vector< std::string > args;
-    std::string firstWord;
-    size_t chanpos1 = std::string::npos;
-    size_t chanpos2 = std::string::npos;
-    size_t chanpos3 = std::string::npos;
-    size_t triggerpos = std::string::npos;
-    chanpos1 = data[2].find("#");
-    chanpos2 = data[3].find("#");
-    std::string channelName = "";
-    std::string command = "";
-    std::string userName = "";
-    //userName = hostmaskToNick(data);
-    if (data.size() >= 4)
-    {
-        firstWord = data[3];
-        //boost::erase_all(data3, ":");
-    }
-    triggerpos = firstWord.substr(0, trigger.length()).find(trigger);
-    if (firstWord.substr(0, trigger.length()) == trigger)
-    {
-        firstWord = firstWord.substr(trigger.length(), firstWord.length()-1);
-    }
-    if (data.size() >= 5)
-    {
-        chanpos3 = data[4].find("#");
-    }
-    if (firstWord != "")
-    {
-        // PRIVMSG ... :!;
-        if (triggerpos != std::string::npos)
+        if (!m_Run)
         {
-            if (chanpos2 != std::string::npos && chanpos3 == std::string::npos)    // chanpos1 yes/no both valid
+            return;
+        }
+        int parsed = 0;
+        std::string trigger = configreader::instance().getString("channelbottrigger");
+        std::vector< std::string > args;
+        std::string firstWord;
+        size_t chanpos1 = std::string::npos;
+        size_t chanpos2 = std::string::npos;
+        size_t chanpos3 = std::string::npos;
+        size_t triggerpos = std::string::npos;
+        chanpos1 = data[2].find("#");
+        chanpos2 = data[3].find("#");
+        std::string channelName = "";
+        std::string command = "";
+        std::string userName = data[0];
+        nickFromHostmask(userName);
+        if (data.size() >= 4)
+        {
+            firstWord = data[3];
+            deleteFirst(firstWord, ":");
+        }
+        triggerpos = firstWord.substr(0, trigger.length()).find(trigger);
+        if (firstWord.substr(0, trigger.length()) == trigger)
+        {
+            firstWord = firstWord.substr(trigger.length(), firstWord.length()-1);
+        }
+        if (data.size() >= 5)
+        {
+            chanpos3 = data[4].find("#");
+        }
+        if (firstWord != "")
+        {
+            // PRIVMSG ... :!;
+            if (triggerpos != std::string::npos)
             {
-                // PRIVMSG nick #chan :!#chan command   ||   PRIVMSG nick bot :!#chan command
-                if (data.size() >= 5)
+                if (chanpos2 != std::string::npos && chanpos3 == std::string::npos)    // chanpos1 yes/no both valid
                 {
-                    channelName = firstWord;
-                    command = data[4];
-                    for (size_t i = 5 ; i < data.size() ; i++)
+                    // PRIVMSG nick #chan :!#chan command   ||   PRIVMSG nick bot :!#chan command
+                    if (data.size() >= 5)
                     {
-                        args.push_back(data[i]);
+                        channelName = firstWord;
+                        command = data[4];
+                        for (size_t i = 5 ; i < data.size() ; i++)
+                        {
+                            args.push_back(data[i]);
+                        }
+                        parsed++;
+                        //ParsePrivmsg(nick, command, chan, args, chantrigger);
                     }
-                    parsed++;
-                    //ParsePrivmsg(nick, command, chan, args, chantrigger);
+                }
+                else if (chanpos1 != std::string::npos && chanpos2 == std::string::npos && chanpos3 == std::string::npos)
+                {
+                    // PRIVMSG nick #chan :!command
+                    if (data.size() >= 4)
+                    {
+                        command = firstWord;
+                        channelName = data[2];
+                        for (size_t i = 4 ; i < data.size() ; i++)
+                        {
+                            args.push_back(data[i]);
+                        }
+                        parsed++;
+                        //ParsePrivmsg(nick, command, chan, args, chantrigger);
+                    }
+                }
+                else if (chanpos1 == std::string::npos && chanpos2 == std::string::npos && chanpos3 == std::string::npos)
+                {
+                    // PRIVMSG nick bot :!command
+                    if (data.size() >= 4)
+                    {
+                        command = firstWord;
+                        channelName = ""; // not needed?
+                        for (size_t i = 4 ; i < data.size() ; i++)
+                        {
+                            args.push_back(data[i]);
+                        }
+                        parsed++;
+                        //ParsePrivmsg(nick, command, chan, args, chantrigger);
+                    }
+                }
+                else if (chanpos2 == std::string::npos && chanpos3 != std::string::npos)    // chanpos1 yes/no both valid
+                {
+                    // PRIVMSG nick #chan :!command #chan    ||      PRIVMSG nick bot :!command #chan
+                    if (data.size() >= 5)
+                    {
+                        command = firstWord;
+                        channelName = data[4];
+                        for (size_t i = 5; i < data.size() ; i++)
+                        {
+                            args.push_back(data[i]);
+                        }
+                        parsed++;
+                        //ParsePrivmsg(nick, command, chan, args, chantrigger);
+                    }
                 }
             }
-            else if (chanpos1 != std::string::npos && chanpos2 == std::string::npos && chanpos3 == std::string::npos)
+            else
             {
-                // PRIVMSG nick #chan :!command
-                if (data.size() >= 4)
+                if (chanpos1 == std::string::npos && chanpos2 != std::string::npos && chanpos3 == std::string::npos)
                 {
-                    command = firstWord;
-                    channelName = data[2];
-                    for (size_t i = 4 ; i < data.size() ; i++)
+                    // PRIVMSG nick bot :#chan command
+                    if (data.size() >= 5)
                     {
-                        args.push_back(data[i]);
+                        channelName = firstWord;
+                        command = data[4];
+                        for (size_t i = 5 ; i < data.size() ; i++)
+                        {
+                            args.push_back(data[i]);
+                        }
+                        parsed++;
+                        //ParsePrivmsg(nick, command, chan, args, chantrigger);
                     }
-                    parsed++;
-                    //ParsePrivmsg(nick, command, chan, args, chantrigger);
                 }
-            }
-            else if (chanpos1 == std::string::npos && chanpos2 == std::string::npos && chanpos3 == std::string::npos)
-            {
-                // PRIVMSG nick bot :!command
-                if (data.size() >= 4)
+                else if (chanpos1 == std::string::npos && chanpos2 == std::string::npos && chanpos3 != std::string::npos)
                 {
-                    command = firstWord;
-                    channelName = ""; // not needed?
-                    for (size_t i = 4 ; i < data.size() ; i++)
+                    // PRIVMSG nick bot :command #chan
+                    if (data.size() >= 5)
                     {
-                        args.push_back(data[i]);
+                        channelName = data[4];
+                        command = firstWord;
+                        for (size_t i = 5; i < data.size() ; i++)
+                        {
+                            args.push_back(data[i]);
+                        }
+                        parsed++;
+                        //ParsePrivmsg(nick, command, chan, args, chantrigger);
                     }
-                    parsed++;
-                    //ParsePrivmsg(nick, command, chan, args, chantrigger);
                 }
-            }
-            else if (chanpos2 == std::string::npos && chanpos3 != std::string::npos)    // chanpos1 yes/no both valid
-            {
-                // PRIVMSG nick #chan :!command #chan    ||      PRIVMSG nick bot :!command #chan
-                if (data.size() >= 5)
+                else if (chanpos1 == std::string::npos && chanpos2 == std::string::npos && chanpos3 == std::string::npos)
                 {
-                    command = firstWord;
-                    channelName = data[4];
-                    for (size_t i = 5; i < data.size() ; i++)
+                    // PRIVMSG nick bot :command
+                    if (data.size() >= 4)
                     {
-                        args.push_back(data[i]);
+                        channelName = ""; // not needed?
+                        command = firstWord;
+                        for (size_t i = 4 ; i < data.size() ; i++)
+                        {
+                            args.push_back(data[i]);
+                        }
+                        parsed++;
+                        //ParsePrivmsg(nick, command, chan, args, chantrigger);
                     }
-                    parsed++;
-                    //ParsePrivmsg(nick, command, chan, args, chantrigger);
-                }
-            }
-        }
-        else
-        {
-            if (chanpos1 == std::string::npos && chanpos2 != std::string::npos && chanpos3 == std::string::npos)
-            {
-                // PRIVMSG nick bot :#chan command
-                if (data.size() >= 5)
-                {
-                    channelName = firstWord;
-                    command = data[4];
-                    for (size_t i = 5 ; i < data.size() ; i++)
-                    {
-                        args.push_back(data[i]);
-                    }
-                    parsed++;
-                    //ParsePrivmsg(nick, command, chan, args, chantrigger);
-                }
-            }
-            else if (chanpos1 == std::string::npos && chanpos2 == std::string::npos && chanpos3 != std::string::npos)
-            {
-                // PRIVMSG nick bot :command #chan
-                if (data.size() >= 5)
-                {
-                    channelName = data[4];
-                    command = firstWord;
-                    for (size_t i = 5; i < data.size() ; i++)
-                    {
-                        args.push_back(data[i]);
-                    }
-                    parsed++;
-                    //ParsePrivmsg(nick, command, chan, args, chantrigger);
-                }
-            }
-            else if (chanpos1 == std::string::npos && chanpos2 == std::string::npos && chanpos3 == std::string::npos)
-            {
-                // PRIVMSG nick bot :command
-                if (data.size() >= 4)
-                {
-                    channelName = ""; // not needed?
-                    command = firstWord;
-                    for (size_t i = 4 ; i < data.size() ; i++)
-                    {
-                        args.push_back(data[i]);
-                    }
-                    parsed++;
-                    //ParsePrivmsg(nick, command, chan, args, chantrigger);
                 }
             }
         }
-    }
-
-    std::string userAuth = "";
-    int userChannelAccess = -1;
-
-    //userAuth = users::instance().getUser(userName).getAuth();
-    std::string overwatchString = "[" + output::instance().sFormatTime("%d-%m-%Y %H:%M:%S") + "] [" + userName + ":" + userAuth + "] ";
-
-    // if there is a channel, add it to the string, including the amount of access the user has to this channel
-    if (channelName != "")
-    {
-        //userChannelAccess = channelbotchannels.getChannel(channelName).getAccess(userAuth);
-        overwatchString = overwatchString + "[" + channelName + ":" + glib::stringFromInt(userChannelAccess) + "] ";
-    }
-    else
-    {
-        overwatchString = overwatchString + "[no channel] ";
-    }
-
-    // if god bla bla
-    if (false)
-    {
-        overwatchString = overwatchString + "[G] ";
-    }
-    else
-    {
-        overwatchString = overwatchString + "    ";
-    }
-    // command is still the command alias
-    overwatchString = overwatchString + command;
-
-    // parse the irc command alias to a command
-    int access = 1000;
-    binds::bindelement bindElement;
-    if (binds::instance().getBind(bindElement, command, mNAME))
-    {
-        command = bindElement.command;
-        access = bindElement.access;
-    }
-    else
-    {
-        command = "";
-        //return;
-    }
-    // command is now the alias parsed to a command
-    overwatchString = overwatchString + ":" + command + "(" + glib::stringFromInt(access) + ")";
-    // put all the remaining arguments in a string
-    for (size_t argsIterator = 0; argsIterator < args.size(); argsIterator++)
-    {
-        overwatchString = overwatchString + " " + args[argsIterator];
-    }
-    irc::instance().addLowPrioritySendQueue(reply::instance().ircPrivmsg(configreader::instance().getString("overwatchchannel"), overwatchString));
-
-
-
-    //auth
-    if (command == "auth")
-    {
-        if (args.size() == 0)
+        if (parsed > 1)
         {
-            irc::instance().addSendQueue(reply::instance().ircWhois(userName));
+            output::instance().addStatus(false, "void channelbot::parsePrivmsg() parsed > 1???");
+        }
+        if (parsed != 1)
+        {
+            continue;
+        }
+
+        std::string userAuth = "";
+        int userChannelAccess = -1;
+
+        userAuth = users::instance().getUser(userName).getAuth();
+        std::string overwatchString = "[" + output::instance().sFormatTime("%d-%m-%Y %H:%M:%S") + "] [" + userName + ":" + userAuth + "] ";
+
+        // if there is a channel, add it to the string, including the amount of access the user has to this channel
+        if (channelName != "")
+        {
+            //userChannelAccess = channelbotchannels.getChannel(channelName).getAccess(userAuth);
+            overwatchString = overwatchString + "[" + channelName + ":" + glib::stringFromInt(userChannelAccess) + "] ";
         }
         else
         {
-            //help(command);
+            overwatchString = overwatchString + "[no channel] ";
         }
-    }
 
-    //ping
-    if (command == "ping")
-    {
-        if (args.size() == 0)
+        // if god bla bla
+        if (false)
         {
-            irc::instance().addSendQueue(reply::instance().ircPrivmsg(channelName, userName + " PONG"));
+            overwatchString = overwatchString + "[G] ";
+        }
+        // command is still the command alias
+        overwatchString = overwatchString + command;
+
+        // parse the irc command alias to a command
+        int access = 1000;
+        binds::bindelement bindElement;
+        if (binds::instance().getBind(bindElement, command, mNAME))
+        {
+            command = bindElement.command;
+            access = bindElement.access;
         }
         else
         {
-            //help(command);
+            command = "";
+            //return;
         }
-    }
+        // command is now the alias parsed to a command
+        overwatchString = overwatchString + ":" + command + "(" + glib::stringFromInt(access) + ")";
+        // put all the remaining arguments in a string
+        for (size_t argsIterator = 0; argsIterator < args.size(); argsIterator++)
+        {
+            overwatchString = overwatchString + " " + args[argsIterator];
+        }
+        irc::instance().addLowPrioritySendQueue(reply::instance().ircPrivmsg(configreader::instance().getString("overwatchchannel"), overwatchString));
 
-    //version
-    if (command == "version")
-    {
-        if (args.size() == 0)
-        {
-            version(channelName, userName);
-        }
-        else
-        {
-            //help(command);
-        }
-    }
 
-/*    //uptime
-    if (command == "uptime")
-    {
-        if (args.size() == 0)
-        {
-            uptime(chan, nick, auth, bind_access);
-        }
-        else
-        {
-            //help(command);
-        }
-    }
 
-    //up
-    if (command == "up")
-    {
-        if (args.size() == 0)
+        //auth
+        if (command == "auth")
         {
-            up(chan, nick, auth, bind_access);
-        }
-        else
-        {
-            //help(command);
-        }
-    }
-
-    //down
-    if (command == "down")
-    {
-        if (args.size() == 0)
-        {
-            down(chan, nick, auth, bind_access);
-        }
-        else
-        {
-            //help(command);
-        }
-    }
-
-    //resync
-    if (command == "resync")
-    {
-        if (args.size() == 0)
-        {
-            resync(chan, nick, auth, bind_access);
-        }
-        else
-        {
-            //help(command);
-        }
-    }
-
-    //access
-    if (command == "access")
-    {
-        if (args.size() == 0)
-        {
-            if (chantrigger >= 0)
+            if (args.size() == 0)
             {
-                access(chan, nick, nick, auth, bind_access);
+                irc::instance().addSendQueue(reply::instance().ircWhois(userName));
             }
             else
             {
                 //help(command);
             }
         }
-        else if (args.size() == 1)
+
+        //ping
+        if (command == "ping")
         {
-            if (chantrigger >= 0)
+            if (args.size() == 0)
             {
-                access(chan, nick, args[0], U.GetAuth(args[0]), bind_access);
+                irc::instance().addSendQueue(reply::instance().ircPrivmsg(channelName, userName + " PONG"));
             }
             else
             {
                 //help(command);
             }
         }
-        else
-        {
-            //help(command);
-        }
-    }
 
-    //myaccess
-    if (command == "myaccess")
-    {
-        if (args.size() == 0)
+        //version
+        if (command == "version")
         {
-            myaccess(nick, nick, auth, bind_access);
-        }
-        else if (args.size() == 1)
-        {
-            if (U.GetGod(nick) == 1)
+            if (args.size() == 0)
             {
-                myaccess(nick, args[0], U.GetAuth(args[0]), bind_access);
+                version(channelName, userName);
             }
             else
             {
-                std::string returnstring = "NOTICE " + nick + " :" + irc_reply("need_god", U.GetLanguage(nick)) + "\r\n";
-                Send(returnstring);
+                //help(command);
             }
         }
-        else
-        {
-            //help(command);
-        }
-    }
 
-    //users
-    if (command == "users")
-    {
-        if (args.size() == 0)
+    /*    //uptime
+        if (command == "uptime")
         {
-            users(chan, nick, auth, bind_access);
-        }
-        else
-        {
-            //help(command);
-        }
-    }
-
-    // readchannel
-    if (command == "readchannel")
-    {
-        if (args.size() == 0)
-        {
-            readchannel(chan, nick, auth, bind_access);
-        }
-        else
-        {
-            //help(command);
-        }
-    }
-
-    //channelcommands
-    if (command == "channelcommands")
-    {
-        if (args.size() == 0)
-        {
-            channelcommands(nick, auth, bind_access);
-        }
-        else
-        {
-            //help(command);
-        }
-    }
-
-    //op
-    if (command == "op")
-    {
-        if (args.size() >= 1)
-        {
-            op(chan, nick, auth, args[0], U.GetAuth(args[0]), bind_access);
-        }
-        else
-        {
-            //help(command);
-        }
-    }
-
-    //deop
-    if (command == "deop")
-    {
-        if (args.size() >= 1)
-        {
-            deop(chan, nick, auth, args[0], U.GetAuth(args[0]), bind_access);
-        }
-        else
-        {
-            //help(command);
-        }
-    }
-
-    //voice
-    if (command == "voice")
-    {
-        if (args.size() >= 1)
-        {
-            voice(chan, nick, auth, args[0], U.GetAuth(args[0]), bind_access);
-        }
-        else
-        {
-            //help(command);
-        }
-    }
-
-    //devoice
-    if (command == "devoice")
-    {
-        if (args.size() >= 1)
-        {
-            devoice(chan, nick, auth, args[0], U.GetAuth(args[0]), bind_access);
-        }
-        else
-        {
-            //help(command);
-        }
-    }
-
-    //kickuser
-    if (command == "kickuser")
-    {
-        if (args.size() >= 1)
-        {
-            std::string reason = "";
-            for (unsigned int args_it = 1; args_it < args.size()-1; args_it++)
+            if (args.size() == 0)
             {
-                reason = reason + args[args_it] + " ";
+                uptime(chan, nick, auth, bind_access);
             }
-            if (args.size() > 1)
+            else
             {
-                reason = reason + args[args.size()-1];
-            }
-            kickuser(chan, nick, auth, args[0], U.GetAuth(args[0]), reason, bind_access);
-        }
-        else
-        {
-            //help(command);
-        }
-    }
-
-    //deluser
-    if (command == "deluser")
-    {
-        if (args.size() >= 1)
-        {
-            for (unsigned int args_it = 0; args_it < args.size(); args_it++)
-            {
-                deluser(chan, nick, auth, args[args_it], U.GetAuth(args[args_it]), bind_access);
+                //help(command);
             }
         }
-        else
-        {
-            //help(command);
-        }
-    }
 
-    //adduser
-    if (command == "adduser")
-    {
-        if (args.size() >= 2)
+        //up
+        if (command == "up")
         {
-            unsigned int last_args_it = args.size() - 1;
-            if (fmod(convertString(args[last_args_it]), 1) == 0)
+            if (args.size() == 0)
             {
+                up(chan, nick, auth, bind_access);
+            }
+            else
+            {
+                //help(command);
+            }
+        }
+
+        //down
+        if (command == "down")
+        {
+            if (args.size() == 0)
+            {
+                down(chan, nick, auth, bind_access);
+            }
+            else
+            {
+                //help(command);
+            }
+        }
+
+        //resync
+        if (command == "resync")
+        {
+            if (args.size() == 0)
+            {
+                resync(chan, nick, auth, bind_access);
+            }
+            else
+            {
+                //help(command);
+            }
+        }
+
+        //access
+        if (command == "access")
+        {
+            if (args.size() == 0)
+            {
+                if (chantrigger >= 0)
+                {
+                    access(chan, nick, nick, auth, bind_access);
+                }
+                else
+                {
+                    //help(command);
+                }
+            }
+            else if (args.size() == 1)
+            {
+                if (chantrigger >= 0)
+                {
+                    access(chan, nick, args[0], U.GetAuth(args[0]), bind_access);
+                }
+                else
+                {
+                    //help(command);
+                }
+            }
+            else
+            {
+                //help(command);
+            }
+        }
+
+        //myaccess
+        if (command == "myaccess")
+        {
+            if (args.size() == 0)
+            {
+                myaccess(nick, nick, auth, bind_access);
+            }
+            else if (args.size() == 1)
+            {
+                if (U.GetGod(nick) == 1)
+                {
+                    myaccess(nick, args[0], U.GetAuth(args[0]), bind_access);
+                }
+                else
+                {
+                    std::string returnstring = "NOTICE " + nick + " :" + irc_reply("need_god", U.GetLanguage(nick)) + "\r\n";
+                    Send(returnstring);
+                }
+            }
+            else
+            {
+                //help(command);
+            }
+        }
+
+        //users
+        if (command == "users")
+        {
+            if (args.size() == 0)
+            {
+                users(chan, nick, auth, bind_access);
+            }
+            else
+            {
+                //help(command);
+            }
+        }
+
+        // readchannel
+        if (command == "readchannel")
+        {
+            if (args.size() == 0)
+            {
+                readchannel(chan, nick, auth, bind_access);
+            }
+            else
+            {
+                //help(command);
+            }
+        }
+    */
+        //channelcommands
+        if (command == "channelcommands")
+        {
+            if (args.size() == 0)
+            {
+                channelCommands(userName, userAuth);
+            }
+            else
+            {
+                //help(command);
+            }
+        }
+    /*
+        //op
+        if (command == "op")
+        {
+            if (args.size() >= 1)
+            {
+                op(chan, nick, auth, args[0], U.GetAuth(args[0]), bind_access);
+            }
+            else
+            {
+                //help(command);
+            }
+        }
+
+        //deop
+        if (command == "deop")
+        {
+            if (args.size() >= 1)
+            {
+                deop(chan, nick, auth, args[0], U.GetAuth(args[0]), bind_access);
+            }
+            else
+            {
+                //help(command);
+            }
+        }
+
+        //voice
+        if (command == "voice")
+        {
+            if (args.size() >= 1)
+            {
+                voice(chan, nick, auth, args[0], U.GetAuth(args[0]), bind_access);
+            }
+            else
+            {
+                //help(command);
+            }
+        }
+
+        //devoice
+        if (command == "devoice")
+        {
+            if (args.size() >= 1)
+            {
+                devoice(chan, nick, auth, args[0], U.GetAuth(args[0]), bind_access);
+            }
+            else
+            {
+                //help(command);
+            }
+        }
+
+        //kickuser
+        if (command == "kickuser")
+        {
+            if (args.size() >= 1)
+            {
+                std::string reason = "";
+                for (unsigned int args_it = 1; args_it < args.size()-1; args_it++)
+                {
+                    reason = reason + args[args_it] + " ";
+                }
+                if (args.size() > 1)
+                {
+                    reason = reason + args[args.size()-1];
+                }
+                kickuser(chan, nick, auth, args[0], U.GetAuth(args[0]), reason, bind_access);
+            }
+            else
+            {
+                //help(command);
+            }
+        }
+
+        //deluser
+        if (command == "deluser")
+        {
+            if (args.size() >= 1)
+            {
+                for (unsigned int args_it = 0; args_it < args.size(); args_it++)
+                {
+                    deluser(chan, nick, auth, args[args_it], U.GetAuth(args[args_it]), bind_access);
+                }
+            }
+            else
+            {
+                //help(command);
+            }
+        }
+
+        //adduser
+        if (command == "adduser")
+        {
+            if (args.size() >= 2)
+            {
+                unsigned int last_args_it = args.size() - 1;
+                if (fmod(convertString(args[last_args_it]), 1) == 0)
+                {
+                    for (unsigned int args_it = 0; args_it < last_args_it; args_it++)
+                    {
+                        adduser(chan, nick, auth, args[args_it], U.GetAuth(args[args_it]), convertString(args[last_args_it]), bind_access);
+                    }
+                }
+                else
+                {
+                    //help(command);
+                    //help(integer);
+                }
+            }
+            else
+            {
+                //help(command);
+            }
+        }
+
+        //changelevel
+        if (command == "changelevel")
+        {
+            if (args.size() >= 2)
+            {
+                unsigned int last_args_it = args.size() - 1;
                 for (unsigned int args_it = 0; args_it < last_args_it; args_it++)
                 {
-                    adduser(chan, nick, auth, args[args_it], U.GetAuth(args[args_it]), convertString(args[last_args_it]), bind_access);
+                    changelevel(chan, nick, auth, args[args_it], U.GetAuth(args[args_it]), convertString(args[last_args_it]), bind_access);
                 }
             }
             else
             {
                 //help(command);
-                //help(integer);
             }
         }
-        else
-        {
-            //help(command);
-        }
-    }
 
-    //changelevel
-    if (command == "changelevel")
-    {
-        if (args.size() >= 2)
+        // stats
+        if (command == "stats")
         {
-            unsigned int last_args_it = args.size() - 1;
-            for (unsigned int args_it = 0; args_it < last_args_it; args_it++)
+            if (args.size() == 0)
             {
-                changelevel(chan, nick, auth, args[args_it], U.GetAuth(args[args_it]), convertString(args[last_args_it]), bind_access);
+                stats(nick, auth, bind_access);
+            }
+            else
+            {
+                //help(command);
             }
         }
-        else
-        {
-            //help(command);
-        }
-    }
 
-    // stats
-    if (command == "stats")
-    {
-        if (args.size() == 0)
+        // set
+        if (command == "set")
         {
-            stats(nick, auth, bind_access);
-        }
-        else
-        {
-            //help(command);
-        }
-    }
-
-    // set
-    if (command == "set")
-    {
-        if (args.size() == 0)  // set list
-        {
-            set(chan, nick, auth, bind_access);
-        }
-        else if (args.size() == 1)  // set get value
-        {
-            set(chan, nick, auth, args[0], bind_access);
-        }
-        else if (args.size() == 2)  // set set value
-        {
-            set(chan, nick, auth, args[0], args[1], bind_access);
-        }
-        else
-        {
-            //help(command);
-        }
-    }*/
+            if (args.size() == 0)  // set list
+            {
+                set(chan, nick, auth, bind_access);
+            }
+            else if (args.size() == 1)  // set get value
+            {
+                set(chan, nick, auth, args[0], bind_access);
+            }
+            else if (args.size() == 2)  // set set value
+            {
+                set(chan, nick, auth, args[0], args[1], bind_access);
+            }
+            else
+            {
+                //help(command);
+            }
+        }*/
     }
 }
 
@@ -1661,58 +1664,11 @@ void channelbot::set(std::string msChannel, std::string msNick, std::string msAu
 */
 
 
-// move to ircppbot - auth
-channelbot::channelbotauth& channelbot::addChannelbotauth(std::string userAuth)
-{
-    channelbotauth l_Channelbotauth;
-    l_Channelbotauth.with = glib::intFromString(configreader::instance().getString("with"));
-    l_Channelbotauth.columns = glib::intFromString(configreader::instance().getString("columns"));
-    l_Channelbotauth.language = configreader::instance().getString("language");
-    l_Channelbotauth.god = false;
-    return m_Channelbotauths.insert( std::pair< std::string, channelbotauth >(userAuth, l_Channelbotauth) )->first;
-}
-
-bool channelbot::renameChannelbotauth(std::string oldUserAuth, std::string newUserAuth)
-{
-    channelbotauth l_Channelbotauth;
-    if (getChannelbotauth(l_Channelbotauth, oldUserAuth))
-    {
-        m_Channelbotauths.insert( std::pair< std::string, channelbotauth >(newUserAuth, l_Channelbotauth) )->first;
-        m_Channelbotauths.erase(oldUserAuth);
-        return true;
-    }
-    output::instance().addStatus(false, "bool channelbot::renameChannelbotauth(std::string oldUserAuth, std::string newUserAuth) oldUserAuth not found");
-    return false;
-}
-
-bool channelbot::getChannelbotauth(channelbotauth& channelBotAuth, std::string userAuth)
-{
-    std::map< std::string, channelbotauth >::iterator l_ChannelbotauthsIterator;
-    l_ChannelbotauthsIterator = m_Channelbotauths.find(userAuth);
-    if (l_ChannelbotauthsIterator == m_Channelbotauths.end())
-    {
-        l_ChannelbotauthsIterator = m_Channelbotauths.find("DEFAULT");
-        if (l_ChannelbotauthsIterator == m_Channelbotauths.end())
-        {
-            output::instance().addStatus(false, "bool channelbot::getChannelbotauth(channelbotaytg& channelBotAuth, std::string userAuth) DEFAULT not found");
-            return false;
-        }
-    }
-    channelBotAuth = (*l_ChannelbotauthsIterator).second;
-    return true;
-}
-//addChannelbotauth("DEFAULT");
-
 void channelbot::channelCommands(std::string userName, std::string userAuth)
 {
-    channelbotauth l_Channelbotauth;
-    getChannelbotauth(l_Channelbotauth, userAuth);
-    l_Channelbotauth.with;
-    l_Channelbotauth.columns;
-    l_Channelbotauth.language;
     std::map< std::string, binds::bindelement > bindElement;
     std::map< std::string, binds::bindelement >::iterator bindElementIterator;
-    if (binds::instance().getBinds(bindElements, mNAME))
+    if (binds::instance().getBinds(bindElement, mNAME))
     {
         for ( bindElementIterator = bindElement.begin() ; bindElementIterator != bindElement.end(); bindElementIterator++ )
         {
@@ -1836,3 +1792,35 @@ void channelbot::timerlong()
         }
     }
 }*/
+
+bool channelbot::nickFromHostmask(std::string& data)
+{
+    std::vector< std::string > who;
+    who = glib::split(data);
+    if (deleteFirst(who[0], ":"))
+    {
+        size_t pos;
+        pos = who[0].find("!");
+        data = who[0].substr(0, pos);
+        return true;
+    }
+    else
+    {
+        return false;
+    }
+}
+
+
+bool channelbot::deleteFirst(std::string& data, std::string character)
+{
+    size_t pos;
+    std::string tmpstring = "";
+    pos = data.find(character);
+    if (pos > 2 && pos != std::string::npos)
+    {
+        tmpstring = data.substr(0, pos-1);
+    }
+    tmpstring = tmpstring + data.substr(pos+1);
+    data = tmpstring;
+    return true;
+}
