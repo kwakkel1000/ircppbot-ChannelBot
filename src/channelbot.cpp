@@ -29,9 +29,9 @@
 #include <ircppbot/irc.h>
 #include <ircppbot/reply.h>
 #include <ircppbot/binds.h>
-#include <ircppbot/users.h>
-#include <ircppbot/auths.h>
-#include <ircppbot/channels.h>
+
+
+#include <ircppbot/managementscontainer.h>
 
 #include <gframe/output.h>
 #include <gframe/versions.h>
@@ -414,8 +414,15 @@ void channelbot::parsePrivmsg()
 
         std::string userAuth = "";
         int userChannelAccess = -1;
-
-        userAuth = users::instance().getUser(userName).getAuth();
+        std::shared_ptr<user> l_User = users::instance().get(userName);
+        if (l_User != nullptr)
+        {
+            userAuth = l_User->getAuth().first;
+        }
+        /*if (users::instance().findUser(userName))
+        {
+            userAuth = users::instance().getUser(userName).getAuth();
+        }*/
         std::string overwatchString = "[" + output::instance().sFormatTime("%d-%m-%Y %H:%M:%S") + "] [" + userName + ":" + userAuth + "] ";
 
         // if there is a channel, add it to the string, including the amount of access the user has to this channel
