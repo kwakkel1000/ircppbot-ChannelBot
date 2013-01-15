@@ -13,3 +13,4 @@ libchannelbot_la_SOURCES = \
         cchannel.cpp \
         channelbot.cpp
 
+libchannelbot_la_LDFLAGS = --version-info $(CHANNELBOTLIBRARY_VERSION)
