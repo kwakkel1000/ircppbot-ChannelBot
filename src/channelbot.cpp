@@ -37,6 +37,7 @@
 #include <gframe/versions.h>
 #include <gframe/glib.h>
 #include <gframe/configreader.h>
+#include <gframe/database.h>
 
 std::string mNAME = PACKAGE;
 std::string mVERSION = VERSION;
@@ -123,6 +124,63 @@ void channelbot::init()
     m_IrcData->setPrivmsg(true);
     irc::instance().addConsumer(m_IrcData);
 
+    std::vector< std::string > l_ChannelAuthKeys;
+    l_ChannelAuthKeys.push_back("auth");
+    l_ChannelAuthKeys.push_back("access");
+    l_ChannelAuthKeys.push_back("noautoop");
+    l_ChannelAuthKeys.push_back("autoinvite");
+    l_ChannelAuthKeys.push_back("info");
+
+    std::vector< std::string > l_ChannelKeys;
+    l_ChannelKeys.push_back("channel");
+    //l_ChannelKeys.push_back("channel");
+  /*  -Centravi- TopicMask    -[ Welcome to #Centravi.Dev ]- -[ Source Development ]- -[ News: * ]-
+-Centravi- DefaultTopic -[ Welcome to #Centravi.Dev ]- -[ Source Development ]-
+-Centravi- GiveOps      300
+-Centravi- GiveVoice    299
+-Centravi- Setters      400
+-Centravi- InviteMe     100
+-Centravi- EnfOps       350
+-Centravi- Greeting
+-Centravi- UserGreeting
+-Centravi- InclModes    stn
+-Centravi- ExclModes
+-Centravi- EnfModes     450
+-Centravi- PubCmd       0
+-Centravi- Toys         2 - Toys will reply in the channel.
+-Centravi- DynLimit     0
+-Centravi- Successor    499
+-Centravi- NoDelete     0*/
+    std::vector< std::map< std::string, std::string > > l_DatabaseChannels;
+    l_DatabaseChannels = databasedata::instance().get(configreader::instance().getString("channelbotchannel.table"), l_ChannelKeys);
+    for (size_t l_DatabaseChannelsIndex = 0; l_DatabaseChannelsIndex < l_DatabaseChannels.size(); l_DatabaseChannelsIndex++)
+    {
+        std::shared_ptr<cchannel> l_Cchannel = addCchannel(l_DatabaseChannels[l_DatabaseChannelsIndex]["channel"]);
+        //l_Cchannel->setSetting(blub, blab);
+        //l_Cchannel->setSetting(blub, blab);
+
+        // channel auths
+        std::vector< std::map< std::string, std::string > > l_DatabaseChannelAuths;
+        l_DatabaseChannelAuths = databasedata::instance().get(configreader::instance().getString("channelbotauth.table"), l_ChannelAuthKeys, "channel=\"" + l_DatabaseChannels[l_DatabaseChannelsIndex]["channel"] + "\"");
+        for (size_t l_DatabaseChannelAuthsIndex = 0; l_DatabaseChannelAuthsIndex < l_DatabaseChannelAuths.size(); l_DatabaseChannelAuthsIndex++)
+        {
+            std::shared_ptr<cauth> l_Cauth = l_Cchannel->addAuth(l_DatabaseChannelAuths[l_DatabaseChannelAuthsIndex]["auth"]);
+            if (l_Cauth != nullptr)
+            {
+                l_Cauth->setAccess(glib::intFromString(l_DatabaseChannelAuths[l_DatabaseChannelAuthsIndex]["access"]));
+                if (l_DatabaseChannelAuths[l_DatabaseChannelAuthsIndex]["noautoop"] == "true")
+                {
+                    l_Cauth->setNoAutoOp(true);
+                }
+                if (l_DatabaseChannelAuths[l_DatabaseChannelAuthsIndex]["autoinvite"] == "true")
+                {
+                    l_Cauth->setAutoInvite(true);
+                }
+                l_Cauth->setInfo(l_DatabaseChannelAuths[l_DatabaseChannelAuthsIndex]["info"]);
+            }
+        }
+    }
+
     /*channelbottrigger = Global::Instance().get_ConfigReader().GetString("channelbottrigger");
     command_table = Global::Instance().get_ConfigReader().GetString("channelbotcommandtable");
     command_table = "ChannelBotCommands";*/
@@ -139,9 +197,6 @@ void channelbot::init()
     timer_long_command.push_back("time 20 from now");*/
     //timerlong();
     //DatabaseData::Instance().DatabaseData::AddBinds(command_table);
-    binds::instance().setBind("version", "version", 0, mNAME);
-    binds::instance().setBind("commands", "channelcommands", 0, mNAME);
-    binds::instance().setBind("ping", "ping", 0, mNAME);
 }
 
 void channelbot::parseModes()
@@ -282,7 +337,7 @@ void channelbot::parsePrivmsg()
         triggerpos = firstWord.substr(0, trigger.length()).find(trigger);
         if (firstWord.substr(0, trigger.length()) == trigger)
         {
-            firstWord = firstWord.substr(trigger.length(), firstWord.length()-1);
+            firstWord = firstWord.substr(trigger.length());
         }
         if (data.size() >= 5)
         {
@@ -429,6 +484,15 @@ void channelbot::parsePrivmsg()
         if (channelName != "")
         {
             //userChannelAccess = channelbotchannels.getChannel(channelName).getAccess(userAuth);
+            std::shared_ptr<cchannel> l_Cchannel = getCchannel(channelName);
+            if (l_Cchannel != nullptr)
+            {
+                std::shared_ptr<cauth> l_Cauth = l_Cchannel->getAuth(userAuth);
+                if (l_Cauth != nullptr)
+                {
+                    userChannelAccess = l_Cauth->getAccess();
+                }
+            }
             overwatchString = overwatchString + "[" + channelName + ":" + glib::stringFromInt(userChannelAccess) + "] ";
         }
         else
@@ -519,13 +583,13 @@ void channelbot::parsePrivmsg()
                 //help(command);
             }
         }
-
+*/
         //up
         if (command == "up")
         {
             if (args.size() == 0)
             {
-                up(channelName, userName, authName, bind_access);
+                up(channelName, userName);
             }
             else
             {
@@ -538,14 +602,14 @@ void channelbot::parsePrivmsg()
         {
             if (args.size() == 0)
             {
-                down(channelName, userName, authName, bind_access);
+                down(channelName, userName);
             }
             else
             {
                 //help(command);
             }
         }
-
+/*
         //resync
         if (command == "resync")
         {
@@ -1440,11 +1504,45 @@ void channelbot::InviteMe(std::string msChannel, std::string msNick, std::string
     }
 }
 */
-void channelbot::up(std::string channelName, std::string userName, std::string authName, int commandAccess)
+void channelbot::up(std::string channelName, std::string userName)
 {
+    /*int access = 1000;
+    binds::bindelement bindElement;
+    if (binds::instance().getBind(bindElement, "up", mNAME))
+    {
+        command = bindElement.command;
+        access = bindElement.access;
+    }*/
+
+    std::string l_Auth = "";
+    std::shared_ptr<user> l_User = users::instance().get(userName);
+    if (l_User != nullptr)
+    {
+        l_Auth = l_User->getAuth().first;
+    }
     std::string l_Reply;
     //bool giveop = false;
     //bool givevoice = false;
+    int l_Access = -1;
+    std::shared_ptr<cchannel> l_Cchannel = getCchannel(channelName);
+    if (l_Cchannel != nullptr)
+    {
+        std::shared_ptr<cauth> l_Cauth = l_Cchannel->getAuth(l_Auth);
+        if (l_Cauth != nullptr)
+        {
+            l_Access = l_Cauth->getAccess();
+        }
+        std::string giveops = l_Cchannel->getSetting("giveops");
+        if (giveops == "global")
+        {
+            giveops = l_Cchannel->getGlobalSetting("giveops");
+        }
+        if (l_Access >= glib::intFromString(giveops))
+        {
+            irc::instance().addSendQueue(reply::instance().ircMode(channelName, "+o " + userName));
+            irc::instance().addSendQueue(reply::instance().ircNotice(userName, reply::instance().ircReplyReplace(reply::instance().ircReply("up_op", "english"), "$channel$", channelName)));
+        }
+    }
     //int access = C.GetAccess(channelName, authName);
 //    if (access >= C.GetGiveops(channelName))
 //    {
@@ -1488,7 +1586,7 @@ void channelbot::up(std::string channelName, std::string userName, std::string a
 //    }
 }
 
-void channelbot::down(std::string channelName, std::string userName, std::string authName, int commandAccess)
+void channelbot::down(std::string channelName, std::string userName)
 {
 //    //ChannelsInterface& C = Global::Instance().get_Channels();
 //    UsersInterface& U = Global::Instance().get_Users();
@@ -1638,6 +1736,14 @@ void channelbot::set(std::string msChannel, std::string msNick, std::string msAu
 // set Setter
 void channelbot::set(std::string msChannel, std::string msNick, std::string msAuth, std::string msSetting, std::string msValue, int miChannelAcess)
 {
+    // NEW !!!
+
+    // databasedata::instance().quote(settingValue);
+    databasedata::instance().insert(configreader::instance().getString("channelbotchannel.table"), settingName, settingValue);
+
+    // /NEW
+
+
     ChannelsInterface& C = Global::Instance().get_Channels();
     //UsersInterface& U = Global::Instance().get_Users();
     int iAccess = C.GetAccess(msChannel, msAuth);
@@ -1823,4 +1929,27 @@ bool channelbot::deleteFirst(std::string& data, std::string character)
     tmpstring = tmpstring + data.substr(pos+1);
     data = tmpstring;
     return true;
+}
+
+
+std::shared_ptr<cchannel> channelbot::addCchannel(std::string channelName)
+{
+    std::pair<std::map< std::string, std::shared_ptr<cchannel> >::iterator, bool> ret;
+    ret = m_Cchannels.insert ( std::pair< std::string, std::shared_ptr<cchannel> >(channelName, std::make_shared<cchannel>()) );
+    if (!ret.second)
+    {
+        return nullptr;
+    }
+    return ret.first->second;
+}
+
+std::shared_ptr<cchannel> channelbot::getCchannel(std::string channelName)
+{
+    std::map< std::string, std::shared_ptr<cchannel> >::iterator l_CchannelsIterator;
+    l_CchannelsIterator = m_Cchannels.find(channelName);
+    if (l_CchannelsIterator == m_Cchannels.end())
+    {
+        return nullptr;
+    }
+    return l_CchannelsIterator->second;
 }

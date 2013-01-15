@@ -8,11 +8,8 @@ CHANNELBOTLIBRARY_VERSION=0:0:0
 
 lib_LTLIBRARIES = libchannelbot.la
 
-libchannelbot_includedir = $(includedir)/include
-
-libchannelbot_include_HEADERS = \
-        include/channelbot.h
-
 libchannelbot_la_SOURCES = \
+        cauth.cpp \
+        cchannel.cpp \
         channelbot.cpp
 

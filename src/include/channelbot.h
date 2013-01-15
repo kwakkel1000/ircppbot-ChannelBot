@@ -40,7 +40,9 @@
 #include <ircppbot/management.h>
 #include <ircppbot/ircdata.h>
 
+#include "cchannel.h"
 
+class cchannel;
 class ircdata;
 class channelbot : public moduleinterface
 {
@@ -101,8 +103,8 @@ class channelbot : public moduleinterface
         */
         void version(std::string channelName, std::string userName);
 
-        void up(std::string channelName, std::string userName, std::string authName, int commandAccess);
-        void down(std::string channelName, std::string userName, std::string authName, int commandAccess);
+        void up(std::string channelName, std::string userName);
+        void down(std::string channelName, std::string userName);
 
         /*void version(std::string chan, std::string mNick, std::string auth, int miChannelAcess);
         void uptime(std::string chan, std::string mNick, std::string auth, int miChannelAcess);
@@ -141,6 +143,11 @@ class channelbot : public moduleinterface
         void channelCommands(std::string, std::string);
         bool nickFromHostmask(std::string& data);
         bool deleteFirst(std::string& data, std::string character);
+
+        std::shared_ptr<cchannel> addCchannel(std::string channelName);
+        std::shared_ptr<cchannel> getCchannel(std::string channelName);
+
+        std::map< std::string, std::shared_ptr<cchannel> > m_Cchannels;
 
 };
 

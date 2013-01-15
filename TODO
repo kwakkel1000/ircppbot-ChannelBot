@@ -9,7 +9,7 @@ kick	local(200)
 
 
 
-commands 
+commands
 if (local != NULL)
 access = local;
 }
@@ -19,59 +19,10 @@ access = global;
 global = binds::instance().getBind(bla bla)
 (if local not set)
 
-class cauth
-{
-    public:
-        void setAccess(size_t access);
-        size_t getAccess();
-        void setNoAutoOp(bool noAutoOp);
-        bool getNoAutoOp();
-        void setAutoInvite(bool autoInvite);
-        bool getAutoInvite();
-        void setInfo(std::string info);
-        std::string getInfo();
 
-    private:
-        size_t m_Access;
-        bool m_NoAutoOp;
-        bool m_AutoInvite;
-        std::string m_Info;
-};
 
-class cauth;
-class cchannel
-{
-    public:
-        // maybe
-        //init();
-        bool addAuth(std::string authName);
-        bool delAuth(std::string authName);
-        std::shared_ptr<cauth> getAuth(std::string authName);
-        std::map< std::string, std::shared_ptr<cauth> > getAuths();
 
-        void setSetting(std::string settingName, std::string settingValue);
-        std::string getSetting(std::string settingName);
-        std::map< std::string, std::string > getSettings();
-
-        void setCommandSetting(std::string settingName, std::string settingValue);
-        std::string getCommandSetting(std::string settingName);
-        std::map< std::string, std::string > getCommandSettings();
-
-    private:
-        // authName, channelAccess
-        std::map< std::string, std::shared_ptr<cauth> > m_ChannelAuths;
-        // settingName, settingValue
-        std::map< std::string, std::string > m_ChannelSettings;
-        // settingName, settingValue ("global" for default global value)
-        std::map< std::string, std::string > m_ChannelCommandSettings;
-};
-
-in channelbot.h
-
-private:
-    std::map< std::string, std::shared_ptr<cchannel> > m_Cchannels;
-
-in .cpp
+in channelbot.cpp
 
 std::map< std::string, std::shared_ptr<cchannel>>::iterator l_CchannelsIterator;
 l_CchannelsIterator = m_Cchannels.find(channelName);
@@ -79,4 +30,4 @@ if (l_CchannelsIterator != m_Cchannels::end)
 {
     l_CchannelsIterator->
 }
-    
+
