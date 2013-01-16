@@ -55,6 +55,7 @@ cchannel::~cchannel()
 
 std::shared_ptr<cauth> cchannel::addAuth(std::string authName)
 {
+    std::lock_guard< std::mutex > lock(m_AuthsMutex);
     std::pair<std::map< std::string, std::shared_ptr<cauth> >::iterator, bool> ret;
     ret = m_ChannelAuths.insert ( std::pair< std::string, std::shared_ptr<cauth> >(authName, std::make_shared<cauth>()) );
     if (!ret.second)
@@ -66,6 +67,7 @@ std::shared_ptr<cauth> cchannel::addAuth(std::string authName)
 
 bool cchannel::delAuth(std::string authName)
 {
+    std::lock_guard< std::mutex > lock(m_AuthsMutex);
     if (m_ChannelAuths.erase(authName) >= 0)
     {
         return true;
@@ -75,6 +77,7 @@ bool cchannel::delAuth(std::string authName)
 
 std::shared_ptr<cauth> cchannel::getAuth(std::string authName)
 {
+    std::lock_guard< std::mutex > lock(m_AuthsMutex);
     std::map< std::string, std::shared_ptr<cauth> >::iterator l_ChannelAuthsIterator;
     l_ChannelAuthsIterator = m_ChannelAuths.find(authName);
     if (l_ChannelAuthsIterator == m_ChannelAuths.end())
@@ -86,17 +89,20 @@ std::shared_ptr<cauth> cchannel::getAuth(std::string authName)
 
 std::map< std::string, std::shared_ptr<cauth> > cchannel::getAuths()
 {
+    std::lock_guard< std::mutex > lock(m_AuthsMutex);
     return m_ChannelAuths;
 }
 
 
 void cchannel::setSetting(std::string settingName, std::string settingValue)
 {
+    std::lock_guard< std::mutex > lock(m_SettingsMutex);
     m_ChannelSettings[settingName] = settingValue;
 }
 
 std::string cchannel::getSetting(std::string settingName)
 {
+    std::lock_guard< std::mutex > lock(m_SettingsMutex);
     std::map< std::string, std::string >::iterator l_ChannelSettingsIterator;
     l_ChannelSettingsIterator = m_ChannelSettings.find(settingName);
     if (l_ChannelSettingsIterator == m_ChannelSettings.end())
@@ -107,6 +113,7 @@ std::string cchannel::getSetting(std::string settingName)
 }
 std::string cchannel::getGlobalSetting(std::string settingName)
 {
+    std::lock_guard< std::mutex > lock(m_SettingsMutex);
     std::map< std::string, std::string >::iterator l_ChannelSettingsIterator;
     l_ChannelSettingsIterator = m_GlobalChannelSettings.find(settingName);
     if (l_ChannelSettingsIterator == m_GlobalChannelSettings.end())
@@ -118,17 +125,20 @@ std::string cchannel::getGlobalSetting(std::string settingName)
 
 std::map< std::string, std::string > cchannel::getSettings()
 {
+    std::lock_guard< std::mutex > lock(m_SettingsMutex);
     return m_ChannelSettings;
 }
 
 
 void cchannel::setCommandSetting(std::string settingName, std::string settingValue)
 {
+    std::lock_guard< std::mutex > lock(m_SettingsMutex);
     m_ChannelCommandSettings[settingName] = settingValue;
 }
 
 std::string cchannel::getCommandSetting(std::string settingName)
 {
+    std::lock_guard< std::mutex > lock(m_SettingsMutex);
     std::map< std::string, std::string >::iterator l_ChannelCommandSettingsIterator;
     l_ChannelCommandSettingsIterator = m_ChannelCommandSettings.find(settingName);
     if (l_ChannelCommandSettingsIterator == m_ChannelCommandSettings.end())
@@ -139,6 +149,7 @@ std::string cchannel::getCommandSetting(std::string settingName)
 }
 std::string cchannel::getGlobalCommandSetting(std::string settingName)
 {
+    std::lock_guard< std::mutex > lock(m_SettingsMutex);
     std::map< std::string, std::string >::iterator l_ChannelCommandSettingsIterator;
     l_ChannelCommandSettingsIterator = m_GlobalChannelSettings.find(settingName);
     if (l_ChannelCommandSettingsIterator == m_GlobalChannelSettings.end())
@@ -150,5 +161,6 @@ std::string cchannel::getGlobalCommandSetting(std::string settingName)
 
 std::map< std::string, std::string > cchannel::getCommandSettings()
 {
+    std::lock_guard< std::mutex > lock(m_SettingsMutex);
     return m_ChannelCommandSettings;
 }

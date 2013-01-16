@@ -74,9 +74,11 @@ bool cauth::getAutoInvite()
 
 void cauth::setInfo(std::string info)
 {
+    std::lock_guard< std::mutex > lock(m_InfoMutex);
     m_Info = info;
 }
 std::string cauth::getInfo()
 {
+    std::lock_guard< std::mutex > lock(m_InfoMutex);
     return m_Info;
 }

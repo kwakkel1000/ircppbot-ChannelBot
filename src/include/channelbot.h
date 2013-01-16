@@ -28,13 +28,11 @@
 #include <string>
 #include <vector>
 #include <map>
-#include <thread>
-#include <atomic>
 
+#include <atomic>
 #include <thread>
+#include <mutex>
 #include <memory>
-#include <string>
-#include <vector>
 
 #include <ircppbot/moduleinterface.h>
 #include <ircppbot/management.h>
@@ -148,6 +146,8 @@ class channelbot : public moduleinterface
         std::shared_ptr<cchannel> getCchannel(std::string channelName);
 
         std::map< std::string, std::shared_ptr<cchannel> > m_Cchannels;
+
+        std::mutex m_CchannelsMutex;
 
 };
 

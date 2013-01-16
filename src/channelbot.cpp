@@ -1520,9 +1520,6 @@ void channelbot::up(std::string channelName, std::string userName)
     {
         l_Auth = l_User->getAuth().first;
     }
-    std::string l_Reply;
-    //bool giveop = false;
-    //bool givevoice = false;
     int l_Access = -1;
     std::shared_ptr<cchannel> l_Cchannel = getCchannel(channelName);
     if (l_Cchannel != nullptr)
@@ -1532,16 +1529,34 @@ void channelbot::up(std::string channelName, std::string userName)
         {
             l_Access = l_Cauth->getAccess();
         }
+        else
+        {
+            output::instance().addStatus(false, "void channelbot::up(std::string channelName, std::string userName) l_Cauth == nullptr");
+        }
         std::string giveops = l_Cchannel->getSetting("giveops");
         if (giveops == "global")
         {
             giveops = l_Cchannel->getGlobalSetting("giveops");
+        }
+        std::string givevoice = l_Cchannel->getSetting("givevoice");
+        if (givevoice == "global")
+        {
+            givevoice = l_Cchannel->getGlobalSetting("givevoice");
         }
         if (l_Access >= glib::intFromString(giveops))
         {
             irc::instance().addSendQueue(reply::instance().ircMode(channelName, "+o " + userName));
             irc::instance().addSendQueue(reply::instance().ircNotice(userName, reply::instance().ircReplyReplace(reply::instance().ircReply("up_op", "english"), "$channel$", channelName)));
         }
+        else if (l_Access >= glib::intFromString(givevoice))
+        {
+            irc::instance().addSendQueue(reply::instance().ircMode(channelName, "+v " + userName));
+            irc::instance().addSendQueue(reply::instance().ircNotice(userName, reply::instance().ircReplyReplace(reply::instance().ircReply("up_voice", "english"), "$channel$", channelName)));
+        }
+    }
+    else
+    {
+        output::instance().addStatus(false, "void channelbot::up(std::string channelName, std::string userName) l_Cchannel == nullptr");
     }
     //int access = C.GetAccess(channelName, authName);
 //    if (access >= C.GetGiveops(channelName))
@@ -1588,6 +1603,60 @@ void channelbot::up(std::string channelName, std::string userName)
 
 void channelbot::down(std::string channelName, std::string userName)
 {
+    /*int access = 1000;
+    binds::bindelement bindElement;
+    if (binds::instance().getBind(bindElement, "down", mNAME))
+    {
+        command = bindElement.command;
+        access = bindElement.access;
+    }*/
+
+    std::string l_Auth = "";
+    std::shared_ptr<user> l_User = users::instance().get(userName);
+    if (l_User != nullptr)
+    {
+        l_Auth = l_User->getAuth().first;
+    }
+    int l_Access = -1;
+    std::shared_ptr<cchannel> l_Cchannel = getCchannel(channelName);
+    if (l_Cchannel != nullptr)
+    {
+        irc::instance().addSendQueue(reply::instance().ircMode(channelName, "-ov " + userName + " " + userName));
+        irc::instance().addSendQueue(reply::instance().ircNotice(userName, reply::instance().ircReplyReplace(reply::instance().ircReply("down", "english"), "$channel$", channelName)));
+        /*std::shared_ptr<cauth> l_Cauth = l_Cchannel->getAuth(l_Auth);
+        if (l_Cauth != nullptr)
+        {
+            l_Access = l_Cauth->getAccess();
+        }
+        else
+        {
+            output::instance().addStatus(false, "void channelbot::down(std::string channelName, std::string userName) l_Cauth == nullptr");
+        }
+        std::string giveops = l_Cchannel->getSetting("giveops");
+        if (giveops == "global")
+        {
+            giveops = l_Cchannel->getGlobalSetting("giveops");
+        }
+        std::string givevoice = l_Cchannel->getSetting("givevoice");
+        if (givevoice == "global")
+        {
+            givevoice = l_Cchannel->getGlobalSetting("givevoice");
+        }
+        if (l_Access >= glib::intFromString(giveops))
+        {
+            irc::instance().addSendQueue(reply::instance().ircMode(channelName, "+o " + userName));
+            irc::instance().addSendQueue(reply::instance().ircNotice(userName, reply::instance().ircReplyReplace(reply::instance().ircReply("up_op", "english"), "$channel$", channelName)));
+        }
+        else if (l_Access >= glib::intFromString(givevoice))
+        {
+            irc::instance().addSendQueue(reply::instance().ircMode(channelName, "+v " + userName));
+            irc::instance().addSendQueue(reply::instance().ircNotice(userName, reply::instance().ircReplyReplace(reply::instance().ircReply("up_voice", "english"), "$channel$", channelName)));
+        }*/
+    }
+    else
+    {
+        output::instance().addStatus(false, "void channelbot::down(std::string channelName, std::string userName) l_Cchannel == nullptr");
+    }
 //    //ChannelsInterface& C = Global::Instance().get_Channels();
 //    UsersInterface& U = Global::Instance().get_Users();
 //    std::string reply_string;
@@ -1934,6 +2003,7 @@ bool channelbot::deleteFirst(std::string& data, std::string character)
 
 std::shared_ptr<cchannel> channelbot::addCchannel(std::string channelName)
 {
+    std::lock_guard< std::mutex > lock(m_CchannelsMutex);
     std::pair<std::map< std::string, std::shared_ptr<cchannel> >::iterator, bool> ret;
     ret = m_Cchannels.insert ( std::pair< std::string, std::shared_ptr<cchannel> >(channelName, std::make_shared<cchannel>()) );
     if (!ret.second)
@@ -1945,6 +2015,7 @@ std::shared_ptr<cchannel> channelbot::addCchannel(std::string channelName)
 
 std::shared_ptr<cchannel> channelbot::getCchannel(std::string channelName)
 {
+    std::lock_guard< std::mutex > lock(m_CchannelsMutex);
     std::map< std::string, std::shared_ptr<cchannel> >::iterator l_CchannelsIterator;
     l_CchannelsIterator = m_Cchannels.find(channelName);
     if (l_CchannelsIterator == m_Cchannels.end())

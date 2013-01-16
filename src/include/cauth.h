@@ -53,10 +53,12 @@ class cauth
         std::string getInfo();
 
     private:
-        size_t m_Access;
-        bool m_NoAutoOp;
-        bool m_AutoInvite;
+        std::atomic<size_t> m_Access;
+        std::atomic<bool> m_NoAutoOp;
+        std::atomic<bool> m_AutoInvite;
         std::string m_Info;
+
+        std::mutex m_InfoMutex;
 };
 
 #endif // SRC_INCLUDE_CAUTH_H
