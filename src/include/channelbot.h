@@ -99,7 +99,7 @@ class channelbot : public moduleinterface
         void access(std::string chan, std::string mNick, std::string reqnick, std::string reqauth, int miChannelAcess);
         void myaccess(std::string mNick, std::string reqnick, std::string reqauth, int miChannelAcess);
         */
-        void version(std::string channelName, std::string userName);
+        void version(std::string target, std::string userName);
 
         void up(std::string channelName, std::string userName);
         void down(std::string channelName, std::string userName);
