@@ -550,7 +550,14 @@ void channelbot::parsePrivmsg()
         {
             if (args.size() == 0)
             {
-                irc::instance().addSendQueue(reply::instance().ircPrivmsg(channelName, userName + " PONG"));
+                if (channelName != "")
+                {
+                    irc::instance().addSendQueue(reply::instance().ircPrivmsg(channelName, userName + " PONG"));
+                }
+                else
+                {
+                    irc::instance().addSendQueue(reply::instance().ircPrivmsg(userName, userName + " PONG"));
+                }
             }
             else
             {
@@ -563,7 +570,14 @@ void channelbot::parsePrivmsg()
         {
             if (args.size() == 0)
             {
-                version(channelName, userName);
+                if (channelName != "")
+                {
+                    version(channelName, userName);
+                }
+                else
+                {
+                    version(userName, userName);
+                }
             }
             else
             {
@@ -886,14 +900,14 @@ void channelbot::parsePrivmsg()
     }
 }
 
-void channelbot::version(std::string channelName, std::string userName)
+void channelbot::version(std::string target, std::string userName)
 {
     std::vector< std::string > versionsVector;
     versionsVector = versions::instance().getVersions();
 
     for (size_t versionsVectorIterator = 0; versionsVectorIterator < versionsVector.size(); versionsVectorIterator++)
     {
-        irc::instance().addSendQueue(reply::instance().ircPrivmsg(channelName, userName + ": " + versionsVector[versionsVectorIterator]));
+        irc::instance().addSendQueue(reply::instance().ircPrivmsg(target, userName + ": " + versionsVector[versionsVectorIterator]));
     }
 }
 /*
