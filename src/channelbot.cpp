@@ -133,24 +133,20 @@ void channelbot::init()
 
     std::vector< std::string > l_ChannelKeys;
     l_ChannelKeys.push_back("channel");
-    //l_ChannelKeys.push_back("channel");
-  /*  -Centravi- TopicMask    -[ Welcome to #Centravi.Dev ]- -[ Source Development ]- -[ News: * ]-
--Centravi- DefaultTopic -[ Welcome to #Centravi.Dev ]- -[ Source Development ]-
--Centravi- GiveOps      300
--Centravi- GiveVoice    299
--Centravi- Setters      400
--Centravi- InviteMe     100
--Centravi- EnfOps       350
--Centravi- Greeting
--Centravi- UserGreeting
--Centravi- InclModes    stn
--Centravi- ExclModes
--Centravi- EnfModes     450
--Centravi- PubCmd       0
--Centravi- Toys         2 - Toys will reply in the channel.
--Centravi- DynLimit     0
--Centravi- Successor    499
--Centravi- NoDelete     0*/
+    l_ChannelKeys.push_back("giveops");
+    l_ChannelKeys.push_back("givevoice");
+    l_ChannelKeys.push_back("setters");
+    l_ChannelKeys.push_back("inviteme");
+    l_ChannelKeys.push_back("enforceops");
+    l_ChannelKeys.push_back("greeting");
+    l_ChannelKeys.push_back("usergreeting");
+    l_ChannelKeys.push_back("modes");
+    l_ChannelKeys.push_back("enforcemodes");
+    l_ChannelKeys.push_back("publiccommands");
+    l_ChannelKeys.push_back("toys");
+    l_ChannelKeys.push_back("dynamiclimit");
+    l_ChannelKeys.push_back("successor");
+    l_ChannelKeys.push_back("nodelete");
     std::vector< std::map< std::string, std::string > > l_DatabaseChannels;
     l_DatabaseChannels = databasedata::instance().get(configreader::instance().getString("channelbotchannel.table"), l_ChannelKeys);
     for (size_t l_DatabaseChannelsIndex = 0; l_DatabaseChannelsIndex < l_DatabaseChannels.size(); l_DatabaseChannelsIndex++)

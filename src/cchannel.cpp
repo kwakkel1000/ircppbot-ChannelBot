@@ -41,7 +41,6 @@ m_GlobalChannelCommandSettings()
 
     m_GlobalChannelSettings.insert(std::pair< std::string, std::string >("giveops", "300"));
     m_GlobalChannelSettings.insert(std::pair< std::string, std::string >("givevoice", "100"));
-
 }
 
 cchannel::cchannel(const cchannel&)
