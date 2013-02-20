@@ -1,3 +1,20 @@
 building:
+./configure
 make clean
-make all
+make 
+make install
+
+import channel.sql
+import bind.sql
+
+copy / edit example.conf and put it with the config file for ircppbot (doesnt have to be same directory)
+put the config file under
+[config]
+in the ircppbot config file
+
+example:
+
+bla bla
+
+[config]
+channelbot.conf
